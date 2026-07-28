@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useAppShell, type ThemeId } from "./AppShellContext";
 import {
   MapPin,
@@ -10,6 +11,8 @@ import {
   Sun,
   Moon,
   Monitor,
+  Menu,
+  X,
 } from "lucide-react";
 
 const THEMES: { id: ThemeId; label: string; icon: typeof Sun }[] = [
@@ -17,6 +20,10 @@ const THEMES: { id: ThemeId; label: string; icon: typeof Sun }[] = [
   { id: "dark", label: "Dark", icon: Moon },
   { id: "system", label: "System", icon: Monitor },
 ];
+
+function isMobileViewport() {
+  return typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches;
+}
 
 export function TripsSidebar() {
   const {
@@ -28,80 +35,129 @@ export function TripsSidebar() {
     setPrefsOpen,
   } = useAppShell();
 
+  // Lock body scroll while the mobile drawer is open
+  useEffect(() => {
+    if (!sidebarOpen || !isMobileViewport()) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [sidebarOpen]);
+
+  const handleLoadTrip = (id: string) => {
+    setLoadTripId(id);
+    if (isMobileViewport()) setSidebarOpen(false);
+  };
+
   return (
-    <aside className={`trips-sidebar ${sidebarOpen ? "is-open" : "is-collapsed"}`}>
-      <div className="trips-sidebar-header">
-        {sidebarOpen ? <h2>Your trips</h2> : <span className="sr-only">Your trips</span>}
-        <button
-          className="icon-btn"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-          title={sidebarOpen ? "Collapse" : "Expand"}
-        >
-          {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
-        </button>
-      </div>
+    <>
+      <button
+        type="button"
+        className="mobile-sidebar-toggle"
+        onClick={() => setSidebarOpen(true)}
+        aria-label="Open trips menu"
+        title="Your trips"
+        hidden={sidebarOpen}
+      >
+        <Menu size={20} />
+      </button>
 
-      <div className="trips-list">
-        {trips.length === 0 ? (
-          sidebarOpen ? (
-            <p className="trips-empty">
-              Finished trips show up here so you can jump back anytime.
-            </p>
-          ) : null
-        ) : (
-          trips.map((trip) => (
-            <div key={trip.id} className="trip-item">
-              <button
-                className="trip-item-main"
-                onClick={() => setLoadTripId(trip.id)}
-                title={`${trip.origin} → ${trip.destination}`}
-              >
-                {sidebarOpen ? (
-                  <>
-                    <span className="trip-item-title">{trip.title}</span>
-                    <span className="trip-item-meta">
-                      <MapPin size={12} /> {trip.origin} → {trip.destination}
-                    </span>
-                    <span className="trip-item-meta">
-                      {trip.days} days · {trip.vibe.replace(/-/g, " ")}
-                    </span>
-                  </>
-                ) : (
-                  <span className="trip-rail-mark">
-                    {(trip.destination || "?").slice(0, 1).toUpperCase()}
-                  </span>
-                )}
-              </button>
-              {sidebarOpen && (
-                <button
-                  className="icon-btn"
-                  aria-label="Delete trip"
-                  onClick={() => removeTrip(trip.id)}
-                >
-                  <Trash2 size={14} />
-                </button>
-              )}
-            </div>
-          ))
-        )}
-      </div>
-
-      <div className="trips-sidebar-footer">
+      {sidebarOpen && (
         <button
-          className={sidebarOpen ? "btn-action" : "icon-btn"}
-          onClick={() => setPrefsOpen(true)}
-          aria-label="Preferences"
-          title="Preferences"
-        >
+          type="button"
+          className="sidebar-backdrop"
+          aria-label="Close trips menu"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`trips-sidebar ${sidebarOpen ? "is-open" : "is-collapsed"}`}
+      >
+        <div className="trips-sidebar-header">
           {sidebarOpen ? (
-            "Preferences"
+            <h2>Your trips</h2>
           ) : (
-            <Settings size={18} />
+            <span className="sr-only">Your trips</span>
           )}
-        </button>
-      </div>
-    </aside>
+          <button
+            className="icon-btn"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+            title={sidebarOpen ? "Collapse" : "Expand"}
+          >
+            {sidebarOpen ? (
+              <>
+                <PanelLeftClose size={18} className="sidebar-toggle-desktop" />
+                <X size={18} className="sidebar-toggle-mobile" />
+              </>
+            ) : (
+              <PanelLeftOpen size={18} />
+            )}
+          </button>
+        </div>
+
+        <div className="trips-list">
+          {trips.length === 0 ? (
+            sidebarOpen ? (
+              <p className="trips-empty">
+                Finished trips show up here so you can jump back anytime.
+              </p>
+            ) : null
+          ) : (
+            trips.map((trip) => (
+              <div key={trip.id} className="trip-item">
+                <button
+                  className="trip-item-main"
+                  onClick={() => handleLoadTrip(trip.id)}
+                  title={`${trip.origin} → ${trip.destination}`}
+                >
+                  {sidebarOpen ? (
+                    <>
+                      <span className="trip-item-title">{trip.title}</span>
+                      <span className="trip-item-meta">
+                        <MapPin size={12} /> {trip.origin} → {trip.destination}
+                      </span>
+                      <span className="trip-item-meta">
+                        {trip.days} days · {trip.vibe.replace(/-/g, " ")}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="trip-rail-mark">
+                      {(trip.destination || "?").slice(0, 1).toUpperCase()}
+                    </span>
+                  )}
+                </button>
+                {sidebarOpen && (
+                  <button
+                    className="icon-btn"
+                    aria-label="Delete trip"
+                    onClick={() => removeTrip(trip.id)}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="trips-sidebar-footer">
+          <button
+            className={sidebarOpen ? "btn-action" : "icon-btn"}
+            onClick={() => {
+              setPrefsOpen(true);
+              if (isMobileViewport()) setSidebarOpen(false);
+            }}
+            aria-label="Preferences"
+            title="Preferences"
+          >
+            {sidebarOpen ? "Preferences" : <Settings size={18} />}
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }
 

@@ -109,11 +109,27 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
     }
   }, [trips, hydrated]);
 
+  // On phones/tablets, keep the drawer closed by default (don't write localStorage)
+  useEffect(() => {
+    if (!hydrated) return;
+    const mq = window.matchMedia("(max-width: 900px)");
+    const closeOnMobile = () => {
+      if (mq.matches) setSidebarOpenState(false);
+    };
+    closeOnMobile();
+    mq.addEventListener("change", closeOnMobile);
+    return () => mq.removeEventListener("change", closeOnMobile);
+  }, [hydrated]);
+
   const setTheme = useCallback((t: ThemeId) => setThemeState(t), []);
 
   const setSidebarOpen = useCallback((open: boolean) => {
     setSidebarOpenState(open);
     try {
+      // Only persist expand/collapse preference on desktop layouts
+      if (typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches) {
+        return;
+      }
       localStorage.setItem(SIDEBAR_STORAGE, open ? "1" : "0");
     } catch {
       /* ignore */

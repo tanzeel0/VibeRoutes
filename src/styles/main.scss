@@ -1139,25 +1139,107 @@
 // ========================
 // Responsive
 // ========================
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  min-width: 0;
+}
+
+.mobile-sidebar-toggle,
+.sidebar-backdrop,
+.sidebar-toggle-mobile {
+  display: none;
+}
+
+.mobile-sidebar-toggle[hidden] {
+  display: none !important;
+}
+
+.sidebar-toggle-desktop {
+  display: block;
+}
+
 @media (max-width: 744px) {
   .app-container {
     padding: 0 $spacing-base;
   }
 
   .app-header {
-    height: 64px;
+    height: 56px;
+    gap: $spacing-sm;
+  }
+
+  .brand-logo-img,
+  .brand-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+  }
+
+  .brand-text {
+    font-size: 15px;
+  }
+
+  .header-actions {
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .header-actions .btn-action {
+    padding: 8px;
+    min-width: 36px;
+    min-height: 36px;
+
+    .btn-label {
+      display: none;
+    }
+  }
+
+  .search-page {
+    padding: $spacing-lg 0 $spacing-xxl;
+    justify-content: flex-start;
+    padding-top: $spacing-xxl;
   }
 
   .search-hero {
-    padding: $spacing-lg 0 0;
+    padding: $spacing-base 0 0;
+  }
+
+  .hero-kicker {
+    font-size: 12px;
   }
 
   .hero-title {
-    font-size: clamp(32px, 9vw, 44px);
+    font-size: clamp(30px, 9vw, 42px);
+    margin-bottom: 10px;
+  }
+
+  .hero-subtitle {
+    font-size: 15px;
+    padding: 0 4px;
+  }
+
+  .search-shell {
+    gap: $spacing-lg;
+  }
+
+  .prompt-input-wrapper {
+    padding: 4px 4px 4px 14px;
+  }
+
+  .prompt-textarea {
+    font-size: 16px; // avoid iOS zoom
+    padding: 8px 0;
+  }
+
+  .prompt-submit {
+    width: 40px;
+    height: 40px;
   }
 
   .prompt-bar.bottom {
-    padding: $spacing-sm $spacing-base $spacing-base;
+    padding: $spacing-sm $spacing-base max($spacing-base, env(safe-area-inset-bottom));
   }
 
   .quick-prompts {
@@ -1169,16 +1251,172 @@
     padding: 6px 12px;
   }
 
-  .map-section {
-    height: 280px;
+  .chat-page {
+    padding-bottom: 120px;
   }
 
   .chat-content {
-    padding: 0 $spacing-sm;
+    padding: 0;
+  }
+
+  .message-user {
+    gap: $spacing-sm;
+    padding: $spacing-base 0;
+  }
+
+  .message-body {
+    font-size: 15px;
+    word-break: break-word;
+  }
+
+  .response-header {
+    gap: $spacing-sm;
+    flex-direction: column;
+  }
+
+  .response-title {
+    font-size: 20px;
+  }
+
+  .response-tags {
+    gap: $spacing-sm;
+
+    span {
+      font-size: 12px;
+      padding: 5px 10px;
+    }
+  }
+
+  .response-summary {
+    font-size: 15px;
+  }
+
+  .map-section {
+    height: min(52vw, 260px);
+    min-height: 200px;
+    border-radius: $radius-sm;
+  }
+
+  .itinerary-list {
+    padding-left: $spacing-base;
+
+    &::before {
+      left: 7px;
+    }
+  }
+
+  .day-card {
+    padding: $spacing-base;
+  }
+
+  .day-card-header {
+    flex-wrap: wrap;
+    gap: $spacing-sm;
+  }
+
+  .day-number {
+    width: 38px;
+    height: 38px;
+    font-size: 14px;
+  }
+
+  .day-info h3 {
+    font-size: 15px;
+  }
+
+  .day-cost {
+    margin-left: auto;
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+
+  .day-description {
+    font-size: 15px;
+  }
+
+  .activity-chip {
+    font-size: 11px;
+  }
+
+  .action-bar {
+    flex-direction: column;
+    gap: $spacing-sm;
+    margin: $spacing-lg 0 $spacing-xl;
+
+    > button {
+      width: 100%;
+    }
+  }
+
+  .wizard-page {
+    padding: $spacing-base 0 130px;
   }
 
   .wizard-bubble {
-    max-width: 90%;
+    max-width: 92%;
+    font-size: 15px;
+    padding: $spacing-sm $spacing-md;
+  }
+
+  .wizard-input-area {
+    padding: $spacing-sm $spacing-base max($spacing-base, env(safe-area-inset-bottom));
+  }
+
+  .wizard-chip-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: $spacing-sm;
+  }
+
+  .wizard-chips {
+    width: 100%;
+  }
+
+  .wizard-chip {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+
+  .wizard-text-row {
+    gap: 8px;
+  }
+
+  .itinerary-title {
+    font-size: 20px;
+  }
+
+  .trip-budget-card {
+    padding: $spacing-base;
+  }
+
+  .trip-budget-range {
+    font-size: 18px;
+
+    span {
+      display: block;
+      margin-left: 0;
+      margin-top: 2px;
+    }
+  }
+
+  .prefs-modal {
+    max-height: min(90vh, 640px);
+    overflow-y: auto;
+    padding: $spacing-base;
+  }
+
+  .theme-grid.theme-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 380px) {
+  .brand-text {
+    display: none;
+  }
+
+  .hero-subtitle {
+    font-size: 14px;
   }
 }
 
@@ -1501,20 +1739,111 @@
 }
 
 @media (max-width: 900px) {
+  .mobile-sidebar-toggle {
+    display: flex;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: $z-header + 1;
+    width: 40px;
+    height: 40px;
+    border-radius: $radius-sm;
+    border: 1px solid $hairline;
+    background: $canvas;
+    color: $ink;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: $shadow-card;
+    padding: 0;
+
+    &:hover {
+      border-color: $primary;
+      color: $primary;
+    }
+  }
+
+  .app-header {
+    padding-left: 44px;
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: $z-modal - 1;
+    background: rgba(0, 0, 0, 0.4);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .sidebar-toggle-desktop {
+    display: none;
+  }
+
+  .sidebar-toggle-mobile {
+    display: block;
+  }
+
   .trips-sidebar {
     position: fixed;
     left: 0;
     top: 0;
     bottom: 0;
-    box-shadow: $shadow-card;
+    width: min(300px, 86vw);
+    height: 100vh;
+    height: 100dvh;
+    z-index: $z-modal;
+    transform: translateX(-105%);
+    transition: transform $duration-normal $ease;
+    box-shadow: none;
+    border-right: 1px solid $hairline;
 
     &.is-collapsed {
-      box-shadow: none;
+      width: min(300px, 86vw);
+      transform: translateX(-105%);
+      pointer-events: none;
     }
 
     &.is-open {
-      z-index: $z-modal;
+      transform: translateX(0);
+      box-shadow: $shadow-card;
+      pointer-events: auto;
+
+      .trips-sidebar-header {
+        justify-content: space-between;
+        padding: $spacing-lg $spacing-base;
+      }
+
+      .trips-list {
+        padding: $spacing-sm;
+      }
+
+      .trip-item {
+        justify-content: flex-start;
+      }
+
+      .trip-item-main {
+        padding: $spacing-sm;
+        display: block;
+        justify-content: flex-start;
+      }
+
+      .trips-sidebar-footer {
+        display: block;
+        justify-content: stretch;
+        padding: $spacing-base;
+      }
     }
   }
 }
+
+@media (min-width: 901px) {
+  .mobile-sidebar-toggle,
+  .sidebar-backdrop {
+    display: none !important;
+  }
+}
+
 

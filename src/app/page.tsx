@@ -267,21 +267,26 @@ export default function HomePage() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <BrandLogo />
+        <div className="header-brand">
+          <BrandLogo />
+        </div>
         {isActive && (
           <div className="header-actions">
             {status === "done" && (
               <>
-                <button className="btn-action" onClick={handleShare}>
-                  <Share2 size={14} /> Share
+                <button className="btn-action" onClick={handleShare} title="Share">
+                  <Share2 size={14} />
+                  <span className="btn-label">Share</span>
                 </button>
-                <button className="btn-action" onClick={handleExportPdf}>
-                  <FileDown size={14} /> Export PDF
+                <button className="btn-action" onClick={handleExportPdf} title="Export PDF">
+                  <FileDown size={14} />
+                  <span className="btn-label">Export PDF</span>
                 </button>
               </>
             )}
-            <button className="btn-action" onClick={handleNewTrip}>
-              <RotateCcw size={14} /> New Trip
+            <button className="btn-action" onClick={handleNewTrip} title="New Trip">
+              <RotateCcw size={14} />
+              <span className="btn-label">New Trip</span>
             </button>
           </div>
         )}
