@@ -1,0 +1,77 @@
+// ========================
+// Airbnb Design Tokens (theme-aware via CSS vars)
+// ========================
+
+$primary: var(--vr-primary);
+$primary-active: var(--vr-primary-active);
+$primary-disabled: var(--vr-primary-soft);
+$primary-soft: var(--vr-primary-soft);
+$luxe: #460479;
+$plus: #92174d;
+
+// Surface
+$canvas: var(--vr-canvas);
+$surface-soft: var(--vr-surface);
+$surface-strong: var(--vr-surface-strong);
+
+// Hairlines & Borders
+$hairline: var(--vr-hairline);
+$hairline-soft: var(--vr-hairline-soft);
+$border-strong: #c1c1c1;
+
+// Text
+$ink: var(--vr-ink);
+$body: var(--vr-body);
+$muted: var(--vr-muted);
+$muted-soft: var(--vr-muted-soft);
+$on-primary: var(--vr-on-primary);
+
+// Semantic
+$error: #c13515;
+$error-hover: #b32505;
+$success: #22c55e;
+$warning: #eab308;
+$legal-link: #428bff;
+$scrim: #000000;
+
+// Layout
+$max-width: 1280px;
+$radius-xs: 4px;
+$radius-sm: 8px;
+$radius-md: 14px;
+$radius-lg: 20px;
+$radius-xl: 32px;
+$radius-full: 9999px;
+
+// Spacing (4px base, 2px micro-step)
+$spacing-xxs: 2px;
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 12px;
+$spacing-base: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-xxl: 48px;
+$spacing-section: 64px;
+
+// Typography
+$font-sans: var(--font-sans), "DM Sans", system-ui, sans-serif;
+$font-display: var(--font-display), "Fraunces", Georgia, serif;
+$font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+// Elevation (single tier)
+$shadow-card: rgba(0, 0, 0, 0.02) 0 0 0 1px, rgba(0, 0, 0, 0.04) 0 2px 6px 0,
+  rgba(0, 0, 0, 0.1) 0 4px 8px 0;
+
+// Transitions
+$ease: cubic-bezier(0.2, 0.9, 0.3, 1);
+$duration-fast: 160ms;
+$duration-normal: 250ms;
+$duration-slow: 400ms;
+
+// Z-index
+$z-header: 100;
+$z-overlay: 200;
+$z-modal: 300;
+$z-input: 50;
+$z-sidebar: 80;

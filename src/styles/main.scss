@@ -1,0 +1,1520 @@
+@use "base/reset";
+@use "base/variables" as *;
+@use "base/mixins" as *;
+@use "base/themes";
+@use "themes/vibes";
+
+// ========================
+// App Container
+// ========================
+.app-container {
+  max-width: $max-width;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0 $spacing-lg;
+}
+
+// ========================
+// Header (80px, gradient fade like footer input bar)
+// ========================
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 80px;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  background: linear-gradient(
+    to bottom,
+    $canvas 55%,
+    transparent 100%
+  );
+  border-bottom: none;
+  z-index: $z-header;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: $ink;
+}
+
+.brand-logo-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  flex-shrink: 0;
+  display: block;
+  object-fit: cover;
+}
+
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: $primary;
+  @include flex-center;
+  color: $on-primary;
+  flex-shrink: 0;
+  box-shadow: 0 6px 16px var(--vr-glow);
+}
+
+.brand-text {
+  font-size: 17px;
+  font-weight: 700;
+  color: $ink;
+  letter-spacing: -0.3px;
+  font-family: $font-display;
+}
+
+.header-actions {
+  display: flex;
+  gap: $spacing-sm;
+  align-items: center;
+}
+
+.btn-action {
+  @include btn-secondary;
+  padding: 8px 16px;
+  font-size: 14px;
+
+  &:hover:not(:disabled),
+  &:active:not(:disabled),
+  &:focus-visible {
+    background: $primary;
+    color: $on-primary;
+    border-color: $primary;
+  }
+}
+
+.btn-share {
+  @include btn-secondary;
+
+  &:hover:not(:disabled),
+  &:active:not(:disabled),
+  &:focus-visible {
+    background: $primary;
+    color: $on-primary;
+    border-color: $primary;
+  }
+}
+
+.btn-export {
+  @include btn-primary;
+
+  &:hover:not(:disabled),
+  &:active:not(:disabled),
+  &:focus-visible {
+    background: $primary-active;
+    color: $on-primary;
+  }
+}
+
+// ========================
+// Search Page (Idle State)
+// ========================
+.search-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xl 0 $spacing-xxl;
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 8% 10% auto;
+    height: 280px;
+    background:
+      radial-gradient(ellipse at 30% 40%, var(--vr-glow), transparent 55%),
+      radial-gradient(ellipse at 70% 30%, var(--vr-glow), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+.search-shell {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-xl;
+  position: relative;
+  z-index: 1;
+}
+
+.search-hero {
+  text-align: center;
+  width: 100%;
+}
+
+.hero-kicker {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: $primary;
+  margin-bottom: 10px;
+}
+
+.hero-title {
+  font-family: $font-display;
+  font-size: clamp(36px, 6vw, 56px);
+  font-weight: 700;
+  line-height: 1.1;
+  color: $ink;
+  margin-bottom: 14px;
+  letter-spacing: -0.03em;
+}
+
+.hero-subtitle {
+  font-size: 17px;
+  color: $muted;
+  max-width: 520px;
+  margin: 0 auto;
+  line-height: 1.55;
+}
+
+// ========================
+// Prompt Bar (pill-shaped search)
+// ========================
+.prompt-bar {
+  width: 100%;
+
+  &.centered {
+    max-width: 720px;
+  }
+
+  &.bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(
+      to top,
+      $canvas 55%,
+      transparent 100%
+    );
+    padding: $spacing-xl $spacing-lg $spacing-lg;
+    border-top: none;
+    z-index: $z-input;
+    pointer-events: none;
+
+    .prompt-input-wrapper {
+      max-width: 720px;
+      margin: 0 auto;
+      pointer-events: auto;
+    }
+  }
+}
+
+.prompt-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--vr-input-bg);
+  border: 1px solid $hairline;
+  border-radius: $radius-full;
+  padding: 6px 6px 6px 20px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+  transition: border-color $duration-fast $ease, opacity $duration-fast $ease;
+
+  &:focus-within {
+    border-color: $primary;
+  }
+
+  &.is-disabled {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+}
+
+.prompt-textarea {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  font-family: $font-sans;
+  resize: none;
+  line-height: 1.5;
+  min-height: 24px;
+  max-height: 200px;
+  background: transparent;
+  color: $ink;
+  padding: 10px 0;
+
+  &::placeholder {
+    color: $muted-soft;
+  }
+}
+
+.prompt-submit {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: $primary;
+  color: $on-primary;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  line-height: 0;
+  transition: background $duration-fast $ease;
+
+  svg {
+    display: block;
+  }
+
+  &:hover {
+    background: $primary-active;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+// ========================
+// Quick Prompt Chips
+// ========================
+.quick-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  justify-content: center;
+  max-width: 720px;
+}
+
+.quick-prompt {
+  padding: $spacing-sm $spacing-base;
+  border-radius: $radius-full;
+  border: 1px solid $hairline;
+  background: $canvas;
+  font-size: 14px;
+  font-weight: 500;
+  color: $ink;
+  cursor: pointer;
+  transition: background $duration-fast $ease, color $duration-fast $ease, border-color $duration-fast $ease;
+  font-family: $font-sans;
+
+  &:hover,
+  &:active {
+    background: $primary;
+    color: $on-primary;
+    border-color: $primary;
+  }
+}
+
+// ========================
+// Chat Page (Active State)
+// ========================
+.chat-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 140px;
+}
+
+.chat-content {
+  flex: 1;
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+// ========================
+// Messages
+// ========================
+.message-user {
+  display: flex;
+  gap: $spacing-base;
+  padding: $spacing-lg 0;
+  border-bottom: 1px solid $hairline-soft;
+  margin-bottom: $spacing-lg;
+  animation: slideUpFade 0.4s $ease forwards;
+}
+
+.avatar-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  @include flex-center;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.user-avatar {
+  background: $surface-strong;
+  color: $muted;
+}
+
+.message-body {
+  font-size: 16px;
+  color: $ink;
+  line-height: 1.5;
+  padding-top: $spacing-xxs;
+}
+
+// ========================
+// AI Response
+// ========================
+.ai-response {
+  animation: slideUpFade 0.5s $ease forwards;
+}
+
+.response-header {
+  display: flex;
+  gap: $spacing-base;
+  margin-bottom: $spacing-lg;
+}
+
+.ai-avatar {
+  background: $primary;
+  color: $on-primary;
+}
+
+.response-title {
+  font-size: 22px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: $ink;
+  line-height: 1.18;
+  letter-spacing: -0.44px;
+}
+
+.response-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-base;
+  font-size: 14px;
+  color: $muted;
+  margin-bottom: $spacing-md;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: $canvas;
+    border: 1px solid $hairline;
+    border-radius: $radius-full;
+    padding: 6px 12px;
+  }
+
+  .response-tag-budget {
+    color: $primary-active;
+    border-color: $primary;
+    background: $primary-soft;
+    font-weight: 600;
+  }
+}
+
+.response-summary {
+  font-size: 16px;
+  color: $body;
+  line-height: 1.5;
+}
+
+// AI thinking indicator
+.ai-thinking {
+  display: flex;
+  gap: $spacing-base;
+  padding: $spacing-lg 0;
+}
+
+.thinking-text {
+  font-size: 16px;
+  color: $muted;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+// ========================
+// Streaming indicator
+// ========================
+.streaming-indicator {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md $spacing-base;
+  background: $surface-soft;
+  border-radius: $radius-md;
+  margin: $spacing-base 0;
+  font-size: 14px;
+  color: $ink;
+
+  .pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $primary;
+    animation: pulse 1.5s infinite;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// ========================
+// Day Card
+// ========================
+.day-card {
+  background: $canvas;
+  border: 1px solid $hairline;
+  border-radius: $radius-md;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-base;
+  cursor: pointer;
+  transition: border-color $duration-normal $ease, box-shadow $duration-normal $ease;
+  position: relative;
+
+  &:hover {
+    border-color: $primary;
+    box-shadow: $shadow-card;
+  }
+
+  &.highlight {
+    border-color: $primary;
+    border-width: 2px;
+    box-shadow: 0 0 0 3px var(--vr-primary-soft);
+  }
+}
+
+.day-card-header {
+  display: flex;
+  align-items: center;
+  gap: $spacing-base;
+  margin-bottom: $spacing-base;
+}
+
+.day-number {
+  width: 44px;
+  height: 44px;
+  border-radius: $radius-sm;
+  background: $primary;
+  @include flex-center;
+  font-size: 16px;
+  font-weight: 600;
+  color: $on-primary;
+  flex-shrink: 0;
+}
+
+.day-info {
+  flex: 1;
+  min-width: 0;
+
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: $ink;
+    margin-bottom: 2px;
+  }
+
+  .day-location {
+    font-size: 14px;
+    color: $muted;
+  }
+}
+
+.day-cost {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: $primary-active;
+  background: $primary-soft;
+  padding: 6px 10px;
+  border-radius: $radius-full;
+  white-space: nowrap;
+}
+
+.day-image {
+  width: 100%;
+  height: auto;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: $radius-sm;
+  margin-bottom: $spacing-base;
+}
+
+.day-description {
+  font-size: 16px;
+  line-height: 1.5;
+  color: $body;
+  margin-bottom: $spacing-base;
+}
+
+.day-activities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.activity-chip {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: $radius-md;
+  font-size: 12px;
+  font-weight: 500;
+  background: $surface-soft;
+  color: $ink;
+  border: 1px solid $hairline-soft;
+  max-width: 100%;
+
+  .activity-chip-cat {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: $primary-active;
+  }
+
+  .activity-chip-name {
+    color: $ink;
+  }
+
+  .activity-chip-cost {
+    color: $muted;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &.water {
+    background: rgba(14, 165, 233, 0.1);
+    border-color: rgba(14, 165, 233, 0.25);
+    .activity-chip-cat { color: #0284c7; }
+  }
+  &.air {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: rgba(99, 102, 241, 0.25);
+    .activity-chip-cat { color: #4f46e5; }
+  }
+  &.adventure {
+    background: rgba(234, 88, 12, 0.1);
+    border-color: rgba(234, 88, 12, 0.25);
+    .activity-chip-cat { color: #c2410c; }
+  }
+  &.food {
+    background: rgba(234, 179, 8, 0.12);
+    border-color: rgba(234, 179, 8, 0.28);
+    .activity-chip-cat { color: #a16207; }
+  }
+  &.nightlife {
+    background: rgba(168, 85, 247, 0.1);
+    border-color: rgba(168, 85, 247, 0.25);
+    .activity-chip-cat { color: #7e22ce; }
+  }
+  &.nature,
+  &.culture,
+  &.music,
+  &.shopping,
+  &.sightseeing,
+  &.wellness,
+  &.transport {
+    background: $surface-soft;
+  }
+}
+
+// ========================
+// Trip budget estimate
+// ========================
+.trip-budget-card {
+  margin: $spacing-lg 0;
+  padding: $spacing-lg;
+  border: 1px solid $hairline;
+  border-radius: $radius-md;
+  background: $canvas;
+}
+
+.trip-budget-header {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-base;
+  color: $primary-active;
+
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: $ink;
+    margin: 0 0 4px;
+  }
+}
+
+.trip-budget-range {
+  font-size: 22px;
+  font-weight: 700;
+  color: $ink;
+  letter-spacing: -0.02em;
+  margin: 0;
+
+  span {
+    font-size: 14px;
+    font-weight: 500;
+    color: $muted;
+    margin-left: 6px;
+  }
+}
+
+.trip-budget-breakdown {
+  list-style: none;
+  margin: 0 0 $spacing-base;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: $spacing-base;
+    font-size: 13px;
+    color: $body;
+    padding-bottom: 8px;
+    border-bottom: 1px solid $hairline-soft;
+
+    span:last-child {
+      font-weight: 600;
+      color: $ink;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+  }
+}
+
+.trip-budget-note {
+  font-size: 13px;
+  color: $body;
+  margin: 0 0 4px;
+  line-height: 1.45;
+}
+
+.trip-budget-source {
+  font-size: 12px;
+  color: $muted;
+  margin: 0;
+  line-height: 1.4;
+}
+
+// ========================
+// Itinerary List (Timeline)
+// ========================
+.itinerary-list {
+  position: relative;
+  padding-left: $spacing-xl;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 17px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: $hairline;
+  }
+}
+
+// ========================
+// Map Section
+// ========================
+.map-section {
+  @include card-base;
+  padding: 0;
+  overflow: hidden;
+  margin-bottom: $spacing-xl;
+  height: 420px;
+  position: relative;
+  width: 100%;
+
+  &.loading {
+    @include flex-center;
+    padding: 0;
+  }
+}
+
+.map-canvas {
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+}
+
+.map-fallback {
+  @include flex-center;
+  height: 100%;
+  color: $muted;
+  font-size: 14px;
+  background: $surface-soft;
+}
+
+.vr-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+// ========================
+// Action Bar
+// ========================
+.action-bar {
+  display: flex;
+  gap: $spacing-sm;
+  margin: $spacing-xl 0 $spacing-xxl;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+
+  > button {
+    flex-shrink: 0;
+  }
+}
+
+// ========================
+// Error
+// ========================
+.error-message {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: $radius-md;
+  padding: $spacing-base;
+  color: $error;
+  font-size: 14px;
+  margin: $spacing-base 0;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  flex-wrap: wrap;
+}
+
+// ========================
+// Loading dots
+// ========================
+.loading-dots {
+  display: inline-flex;
+  gap: 4px;
+
+  span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: dot-pulse 1.4s infinite ease-in-out;
+
+    &:nth-child(2) {
+      animation-delay: 0.16s;
+    }
+    &:nth-child(3) {
+      animation-delay: 0.32s;
+    }
+  }
+}
+
+@keyframes dot-pulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// ========================
+// Empty state
+// ========================
+.empty-state {
+  text-align: center;
+  padding: $spacing-section $spacing-base;
+  color: $muted;
+
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: $spacing-base;
+  }
+}
+
+// ========================
+// Popular routes
+// ========================
+.popular-section {
+  padding: $spacing-xl 0;
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 500;
+  margin-bottom: $spacing-lg;
+  color: $ink;
+}
+
+.popular-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: $spacing-base;
+}
+
+.popular-card {
+  @include card-base;
+  @include card-hover;
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+}
+
+.popular-card-image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  background: $surface-soft;
+}
+
+.popular-card-body {
+  padding: $spacing-base;
+}
+
+.popular-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: $ink;
+}
+
+.popular-card-route {
+  font-size: 14px;
+  color: $muted;
+}
+
+.popular-card-vibe {
+  display: inline-block;
+  margin-top: $spacing-sm;
+  padding: 4px 10px;
+  border-radius: $radius-full;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: $surface-soft;
+  color: $ink;
+}
+
+// ========================
+// Wizard Page
+// ========================
+.wizard-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+  padding: $spacing-xl 0 140px;
+}
+
+.chat-wizard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.wizard-messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-base;
+  padding: $spacing-sm 0 $spacing-lg;
+}
+
+.wizard-msg {
+  display: flex;
+  gap: $spacing-md;
+  animation: slideUpFade 0.35s $ease forwards;
+
+  &.user {
+    justify-content: flex-end;
+  }
+
+  &.user .wizard-bubble {
+    background: $primary;
+    color: $on-primary;
+    border-radius: $radius-md $radius-md 4px $radius-md;
+  }
+
+  &.ai {
+    align-items: flex-start;
+  }
+
+  &.ai .wizard-bubble {
+    background: $surface-soft;
+    color: $ink;
+    border-radius: $radius-md $radius-md $radius-md 4px;
+  }
+}
+
+.wizard-bubble {
+  max-width: 80%;
+  padding: $spacing-md $spacing-base;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.wizard-input-area {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, $canvas 55%, transparent 100%);
+  padding: $spacing-md $spacing-lg $spacing-lg;
+  border-top: none;
+  z-index: $z-input;
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
+
+  .wizard-text-input {
+    background: var(--vr-input-bg);
+  }
+}
+
+.wizard-chip-row {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.wizard-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  flex: 1;
+}
+
+.wizard-chip {
+  padding: $spacing-sm $spacing-base;
+  border-radius: $radius-full;
+  border: 1px solid $hairline;
+  background: $canvas;
+  font-size: 14px;
+  font-weight: 500;
+  color: $ink;
+  cursor: pointer;
+  transition: border-color $duration-fast $ease;
+  font-family: $font-sans;
+
+  &:hover {
+    border-color: $primary;
+  }
+
+  &.selected {
+    background: $primary-soft;
+    border-color: $primary;
+    color: $primary-active;
+  }
+}
+
+.wizard-text-row {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wizard-text-input {
+  flex: 1;
+  padding: $spacing-md $spacing-base;
+  border: 1px solid $hairline;
+  border-radius: $radius-full;
+  font-size: 16px;
+  font-family: $font-sans;
+  color: $ink;
+  background: $canvas;
+  outline: none;
+  transition: border-color $duration-fast $ease;
+
+  &::placeholder {
+    color: $muted-soft;
+  }
+
+  &:focus {
+    border-color: $primary;
+  }
+}
+
+.wizard-skip {
+  max-width: 720px;
+  margin: $spacing-sm auto 0;
+  display: flex;
+  gap: $spacing-sm;
+  align-items: center;
+}
+
+// ========================
+// Itinerary Detail Header
+// ========================
+.itinerary-header {
+  padding: $spacing-lg 0 $spacing-base;
+  border-bottom: 1px solid $hairline-soft;
+  margin-bottom: $spacing-lg;
+}
+
+.itinerary-title {
+  font-size: 22px;
+  font-weight: 500;
+  color: $ink;
+  line-height: 1.18;
+  letter-spacing: -0.44px;
+  margin-bottom: 8px;
+}
+
+.itinerary-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-base;
+  font-size: 14px;
+  color: $muted;
+  margin-bottom: $spacing-sm;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.itinerary-summary {
+  font-size: 16px;
+  color: $body;
+  line-height: 1.5;
+}
+
+// ========================
+// Animations
+// ========================
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up-fade {
+  animation: slideUpFade 0.5s $ease forwards;
+}
+
+// ========================
+// Responsive
+// ========================
+@media (max-width: 744px) {
+  .app-container {
+    padding: 0 $spacing-base;
+  }
+
+  .app-header {
+    height: 64px;
+  }
+
+  .search-hero {
+    padding: $spacing-lg 0 0;
+  }
+
+  .hero-title {
+    font-size: clamp(32px, 9vw, 44px);
+  }
+
+  .prompt-bar.bottom {
+    padding: $spacing-sm $spacing-base $spacing-base;
+  }
+
+  .quick-prompts {
+    gap: 6px;
+  }
+
+  .quick-prompt {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+
+  .map-section {
+    height: 280px;
+  }
+
+  .chat-content {
+    padding: 0 $spacing-sm;
+  }
+
+  .wizard-bubble {
+    max-width: 90%;
+  }
+}
+
+@media (min-width: 745px) and (max-width: 1128px) {
+  .popular-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1129px) {
+  .popular-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+// ========================
+// App shell layout
+// ========================
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.app-shell-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.trips-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background: var(--vr-sidebar);
+  border-right: 1px solid $hairline;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: $z-sidebar;
+  transition: width $duration-normal $ease;
+
+  &.is-collapsed {
+    width: 56px;
+
+    .trips-sidebar-header {
+      justify-content: center;
+      padding: $spacing-md $spacing-xs;
+    }
+
+    .trips-list {
+      padding: $spacing-xs;
+    }
+
+    .trip-item {
+      justify-content: center;
+    }
+
+    .trip-item-main {
+      padding: $spacing-sm 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .trips-sidebar-footer {
+      display: flex;
+      justify-content: center;
+      padding: $spacing-sm;
+    }
+  }
+}
+
+.trips-sidebar-header {
+  @include flex-between;
+  padding: $spacing-lg $spacing-base;
+  border-bottom: 1px solid $hairline-soft;
+  min-height: 64px;
+
+  h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: $ink;
+  }
+
+  .icon-btn {
+    color: $muted;
+
+    &:hover {
+      color: $primary;
+      background: $primary-soft;
+    }
+  }
+}
+
+.trips-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: $spacing-sm;
+  @include scrollbar-thin;
+}
+
+.trips-empty {
+  font-size: 13px;
+  color: $muted;
+  padding: $spacing-base;
+  line-height: 1.5;
+}
+
+.trip-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  margin-bottom: 4px;
+  border-radius: $radius-sm;
+  border: 1px solid transparent;
+
+  &:hover {
+    background: $primary-soft;
+    border-color: transparent;
+
+    .trip-item-title {
+      color: $primary-active;
+    }
+
+    .icon-btn {
+      color: $primary;
+    }
+  }
+}
+
+.trip-item-main {
+  flex: 1;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: $spacing-sm;
+  cursor: pointer;
+  font-family: $font-sans;
+  color: $ink;
+  min-width: 0;
+}
+
+.trip-item-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: $ink;
+  transition: color $duration-fast $ease;
+}
+
+.trip-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: $muted;
+  margin-top: 2px;
+
+  svg {
+    color: $primary;
+    opacity: 0.85;
+  }
+}
+
+.trip-rail-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-sm;
+  background: $primary-soft;
+  color: $primary-active;
+  @include flex-center;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.trips-sidebar-footer {
+  padding: $spacing-base;
+  border-top: 1px solid $hairline-soft;
+
+  .btn-action {
+    width: 100%;
+    border-color: $primary;
+    color: $primary-active;
+    background: $canvas;
+
+    &:hover:not(:disabled),
+    &:active:not(:disabled) {
+      background: $primary;
+      color: $on-primary;
+      border-color: $primary;
+    }
+  }
+
+  .icon-btn {
+    color: $muted;
+
+    &:hover {
+      color: $primary;
+      background: $primary-soft;
+    }
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: $muted;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: $radius-sm;
+  @include flex-center;
+
+  &:hover {
+    background: $surface-strong;
+    color: $ink;
+  }
+}
+
+.prefs-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: $z-modal;
+  @include flex-center;
+  padding: $spacing-base;
+}
+
+.prefs-modal {
+  background: $canvas;
+  border-radius: $radius-lg;
+  width: 100%;
+  max-width: 420px;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  border: 1px solid $hairline;
+}
+
+.prefs-header {
+  @include flex-between;
+  margin-bottom: $spacing-lg;
+
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+  }
+}
+
+.prefs-section {
+  margin-bottom: $spacing-lg;
+  padding-bottom: $spacing-lg;
+  border-bottom: 1px solid $hairline-soft;
+
+  &:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+}
+
+.prefs-hint {
+  font-size: 13px;
+  color: $muted;
+  margin-bottom: $spacing-sm;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-sm;
+
+  &.theme-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.theme-swatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: $radius-sm;
+  border: 1.5px solid $hairline;
+  background: $canvas;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: $font-sans;
+  color: $ink;
+
+  &.selected {
+    border-color: $primary;
+    background: $primary-soft;
+    color: $primary-active;
+  }
+}
+
+@media (max-width: 900px) {
+  .trips-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    box-shadow: $shadow-card;
+
+    &.is-collapsed {
+      box-shadow: none;
+    }
+
+    &.is-open {
+      z-index: $z-modal;
+    }
+  }
+}
+

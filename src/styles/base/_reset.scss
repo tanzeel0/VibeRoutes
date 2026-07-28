@@ -1,0 +1,50 @@
+@use "variables" as *;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: $font-sans;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, var(--vr-glow), transparent 55%),
+    $canvas;
+  color: $ink;
+  min-height: 100vh;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+a {
+  color: $ink;
+  text-decoration: none;
+  transition: color $duration-fast $ease;
+
+  &:hover {
+    color: $primary;
+  }
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  font-family: $font-sans;
+}
+
+::selection {
+  background: var(--vr-primary-soft);
+  color: $primary-active;
+}

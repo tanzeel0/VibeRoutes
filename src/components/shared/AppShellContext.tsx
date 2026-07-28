@@ -1,0 +1,173 @@
+"use client";
+
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+
+export type ThemeId = "light" | "dark" | "system";
+
+export interface SavedTrip {
+  id: string;
+  slug: string;
+  title: string;
+  origin: string;
+  destination: string;
+  days: number;
+  vibe: string;
+  savedAt: number;
+  payload: unknown;
+}
+
+interface AppShellContextValue {
+  theme: ThemeId;
+  setTheme: (t: ThemeId) => void;
+  trips: SavedTrip[];
+  saveTrip: (trip: Omit<SavedTrip, "id" | "savedAt"> & { id?: string }) => void;
+  removeTrip: (id: string) => void;
+  sidebarOpen: boolean;
+  setSidebarOpen: (open: boolean) => void;
+  prefsOpen: boolean;
+  setPrefsOpen: (open: boolean) => void;
+  loadTripId: string | null;
+  setLoadTripId: (id: string | null) => void;
+}
+
+const THEME_STORAGE = "vibe-routes-theme";
+const TRIPS_STORAGE = "vibe-routes-trips";
+const SIDEBAR_STORAGE = "vibe-routes-sidebar";
+
+const AppShellContext = createContext<AppShellContextValue | null>(null);
+
+export function useAppShell() {
+  const ctx = useContext(AppShellContext);
+  if (!ctx) throw new Error("useAppShell must be used within AppShellProvider");
+  return ctx;
+}
+
+function normalizeTheme(raw: string | null): ThemeId {
+  if (raw === "light" || raw === "dark" || raw === "system") return raw;
+  // Migrate old color themes → light
+  return "light";
+}
+
+function resolveTheme(theme: ThemeId): "light" | "dark" {
+  if (theme === "light" || theme === "dark") return theme;
+  if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    return "dark";
+  }
+  return "light";
+}
+
+export function AppShellProvider({ children }: { children: ReactNode }) {
+  const [theme, setThemeState] = useState<ThemeId>("system");
+  const [trips, setTrips] = useState<SavedTrip[]>([]);
+  const [sidebarOpen, setSidebarOpenState] = useState(false);
+  const [prefsOpen, setPrefsOpen] = useState(false);
+  const [loadTripId, setLoadTripId] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    try {
+      setThemeState(normalizeTheme(localStorage.getItem(THEME_STORAGE)));
+      const raw = localStorage.getItem(TRIPS_STORAGE);
+      if (raw) setTrips(JSON.parse(raw) as SavedTrip[]);
+      const sb = localStorage.getItem(SIDEBAR_STORAGE);
+      if (sb === "1") setSidebarOpenState(true);
+    } catch {
+      /* ignore */
+    }
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    const apply = () => {
+      document.documentElement.setAttribute("data-theme", resolveTheme(theme));
+    };
+    apply();
+    localStorage.setItem(THEME_STORAGE, theme);
+
+    if (theme !== "system") return;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => apply();
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [theme, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(TRIPS_STORAGE, JSON.stringify(trips));
+    } catch {
+      /* ignore quota / private mode errors */
+    }
+  }, [trips, hydrated]);
+
+  const setTheme = useCallback((t: ThemeId) => setThemeState(t), []);
+
+  const setSidebarOpen = useCallback((open: boolean) => {
+    setSidebarOpenState(open);
+    try {
+      localStorage.setItem(SIDEBAR_STORAGE, open ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const saveTrip = useCallback(
+    (trip: Omit<SavedTrip, "id" | "savedAt"> & { id?: string }) => {
+      setTrips((prev) => {
+        const id = trip.id || trip.slug || `trip-${Date.now()}`;
+        const next: SavedTrip = {
+          ...trip,
+          id,
+          savedAt: Date.now(),
+        };
+        const without = prev.filter((t) => t.id !== id && t.slug !== trip.slug);
+        return [next, ...without].slice(0, 30);
+      });
+    },
+    []
+  );
+
+  const removeTrip = useCallback((id: string) => {
+    setTrips((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      theme,
+      setTheme,
+      trips,
+      saveTrip,
+      removeTrip,
+      sidebarOpen,
+      setSidebarOpen,
+      prefsOpen,
+      setPrefsOpen,
+      loadTripId,
+      setLoadTripId,
+    }),
+    [
+      theme,
+      setTheme,
+      trips,
+      saveTrip,
+      removeTrip,
+      sidebarOpen,
+      setSidebarOpen,
+      prefsOpen,
+      loadTripId,
+    ]
+  );
+
+  return (
+    <AppShellContext.Provider value={value}>{children}</AppShellContext.Provider>
+  );
+}

@@ -1,0 +1,51 @@
+@use "../base/variables" as *;
+
+.vibe-monsoon-chill {
+  --vibe-primary: #{#06b6d4};
+  --vibe-accent: #{#22d3ee};
+}
+
+.vibe-indie-music {
+  --vibe-primary: #{#a855f7};
+  --vibe-accent: #{#c084fc};
+}
+
+.vibe-street-food {
+  --vibe-primary: #{#f97316};
+  --vibe-accent: #{#fb923c};
+}
+
+.vibe-heritage-walk {
+  --vibe-primary: #{#eab308};
+  --vibe-accent: #{#facc15};
+}
+
+.vibe-nightlife {
+  --vibe-primary: #{#ec4899};
+  --vibe-accent: #{#f472b6};
+}
+
+.vibe-nature-escape {
+  --vibe-primary: #{#22c55e};
+  --vibe-accent: #{#4ade80};
+}
+
+.vibe-photography {
+  --vibe-primary: #{#f43f5e};
+  --vibe-accent: #{#fb7185};
+}
+
+.vibe-budget-backpacking {
+  --vibe-primary: #{#14b8a6};
+  --vibe-accent: #{#2dd4bf};
+}
+
+.vibe-family-mellow {
+  --vibe-primary: #{#f59e0b};
+  --vibe-accent: #{#fbbf24};
+}
+
+.vibe-solo-reset {
+  --vibe-primary: #{#6366f1};
+  --vibe-accent: #{#818cf8};
+}

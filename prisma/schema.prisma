@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Itinerary {
+  id            String   @id @default(uuid()) @db.Uuid
+  slug          String   @unique
+  source        String   // curated | ai_generated
+  origin        String
+  destination   String
+  vibePrimary   String   @map("vibe_primary")
+  vibeSecondary String?  @map("vibe_secondary")
+  purpose       String[]
+  interests     String[]
+  durationDays  Int      @map("duration_days")
+  payload       Json
+  generatedAt   DateTime @default(now()) @map("generated_at")
+  hitCount      Int      @default(0) @map("hit_count")
+
+  @@index([origin, destination, vibePrimary])
+  @@map("itineraries")
+}
+
+model VerifiedSpot {
+  id             String   @id @default(uuid()) @db.Uuid
+  city           String
+  name           String
+  category       String
+  lat            Float?
+  lng            Float?
+  description    String?
+  sourceVerified Boolean @default(false) @map("source_verified")
+
+  @@index([city, category])
+  @@map("verified_spots")
+}
+
+model ImageCache {
+  queryKey  String   @id @map("query_key")
+  url       String
+  alt       String?
+  credit    String?
+  fetchedAt DateTime @default(now()) @map("fetched_at")
+
+  @@map("image_cache")
+}

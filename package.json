@@ -1,0 +1,35 @@
+{
+  "name": "vibecheck-routes",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3070 --webpack",
+    "build": "next build",
+    "start": "next start -p 3070",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@prisma/client": "^6.19.3",
+    "@reduxjs/toolkit": "^2.12.0",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^1.27.0",
+    "next": "16.2.12",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-redux": "^9.3.0",
+    "sass": "^1.102.0",
+    "slugify": "^1.6.9",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.21",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.12",
+    "prisma": "^6.19.3",
+    "typescript": "^5"
+  }
+}

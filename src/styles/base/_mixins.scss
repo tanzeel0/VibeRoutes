@@ -1,0 +1,144 @@
+@use "variables" as *;
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin container {
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+}
+
+@mixin card-base {
+  background: $canvas;
+  border: 1px solid $hairline;
+  border-radius: $radius-md;
+  transition: box-shadow $duration-normal $ease;
+}
+
+@mixin card-hover {
+  &:hover {
+    box-shadow: $shadow-card;
+  }
+}
+
+@mixin input-base {
+  width: 100%;
+  padding: 12px 16px;
+  background: $canvas;
+  border: 1px solid $hairline;
+  border-radius: $radius-sm;
+  color: $ink;
+  font-size: 14px;
+  font-family: $font-sans;
+  transition: border-color $duration-fast $ease;
+
+  &::placeholder {
+    color: $muted-soft;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $ink;
+  }
+}
+
+@mixin btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-family: $font-sans;
+  font-weight: 500;
+  font-size: 14px;
+  border-radius: $radius-sm;
+  border: none;
+  cursor: pointer;
+  transition: background $duration-fast $ease;
+  text-decoration: none;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+@mixin btn-primary {
+  @include btn-base;
+  background: $primary;
+  color: $on-primary;
+
+  &:hover:not(:disabled) {
+    background: $primary-active;
+  }
+}
+
+@mixin btn-secondary {
+  @include btn-base;
+  background: $canvas;
+  color: $ink;
+  border: 1px solid $ink;
+
+  &:hover:not(:disabled) {
+    background: $surface-strong;
+  }
+}
+
+@mixin btn-ghost {
+  @include btn-base;
+  background: transparent;
+  color: $ink;
+
+  &:hover:not(:disabled) {
+    background: $surface-strong;
+  }
+}
+
+@mixin chip-base {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: $radius-full;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid $hairline;
+  background: $canvas;
+  color: $ink;
+  cursor: pointer;
+  transition: border-color $duration-fast $ease;
+  user-select: none;
+
+  &:hover {
+    border-color: $primary;
+  }
+
+  &.active {
+    background: $primary-soft;
+    border-color: $primary;
+    color: $primary-active;
+  }
+}
+
+@mixin scrollbar-thin {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 3px;
+  }
+}

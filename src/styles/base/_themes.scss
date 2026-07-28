@@ -1,0 +1,40 @@
+/* Theme tokens — light / dark via data-theme on <html> */
+
+:root,
+[data-theme="light"] {
+  --vr-primary: #ff385c;
+  --vr-primary-active: #e00b41;
+  --vr-primary-soft: #ffe8ed;
+  --vr-canvas: #ffffff;
+  --vr-surface: #f7f7f7;
+  --vr-surface-strong: #f2f2f2;
+  --vr-hairline: #dddddd;
+  --vr-hairline-soft: #ebebeb;
+  --vr-ink: #222222;
+  --vr-body: #3f3f3f;
+  --vr-muted: #6a6a6a;
+  --vr-muted-soft: #929292;
+  --vr-on-primary: #ffffff;
+  --vr-sidebar: #ffffff;
+  --vr-input-bg: #ffffff;
+  --vr-glow: rgba(255, 56, 92, 0.1);
+}
+
+[data-theme="dark"] {
+  --vr-primary: #ff5a7a;
+  --vr-primary-active: #ff385c;
+  --vr-primary-soft: rgba(255, 56, 92, 0.18);
+  --vr-canvas: #0f0f10;
+  --vr-surface: #1a1a1c;
+  --vr-surface-strong: #242428;
+  --vr-hairline: #333338;
+  --vr-hairline-soft: #2a2a2e;
+  --vr-ink: #f4f4f5;
+  --vr-body: #d4d4d8;
+  --vr-muted: #a1a1aa;
+  --vr-muted-soft: #71717a;
+  --vr-on-primary: #ffffff;
+  --vr-sidebar: #0f0f10;
+  --vr-input-bg: #1a1a1c;
+  --vr-glow: rgba(255, 90, 122, 0.16);
+}
