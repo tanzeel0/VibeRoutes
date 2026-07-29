@@ -50,14 +50,12 @@ export function useAppShell() {
   return ctx;
 }
 
-function normalizeTheme(raw: string | null): ThemeId {
-  if (raw === "light" || raw === "dark" || raw === "system") return raw;
-  // Migrate old color themes → light
-  return "light";
+function normalizeTheme(_raw: string | null): ThemeId {
+  // App always follows the OS / browser preference
+  return "system";
 }
 
-function resolveTheme(theme: ThemeId): "light" | "dark" {
-  if (theme === "light" || theme === "dark") return theme;
+function resolveTheme(_theme: ThemeId): "light" | "dark" {
   if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
     return "dark";
   }
@@ -88,17 +86,16 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!hydrated) return;
     const apply = () => {
-      document.documentElement.setAttribute("data-theme", resolveTheme(theme));
+      document.documentElement.setAttribute("data-theme", resolveTheme("system"));
     };
     apply();
-    localStorage.setItem(THEME_STORAGE, theme);
+    localStorage.setItem(THEME_STORAGE, "system");
 
-    if (theme !== "system") return;
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = () => apply();
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
-  }, [theme, hydrated]);
+  }, [hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -108,6 +105,11 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
       /* ignore quota / private mode errors */
     }
   }, [trips, hydrated]);
+
+  // Theme is locked to system — keep setter for API compat but ignore overrides
+  const setTheme = useCallback((_t: ThemeId) => {
+    setThemeState("system");
+  }, []);
 
   // On phones/tablets, keep the drawer closed by default (don't write localStorage)
   useEffect(() => {
@@ -120,8 +122,6 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
     mq.addEventListener("change", closeOnMobile);
     return () => mq.removeEventListener("change", closeOnMobile);
   }, [hydrated]);
-
-  const setTheme = useCallback((t: ThemeId) => setThemeState(t), []);
 
   const setSidebarOpen = useCallback((open: boolean) => {
     setSidebarOpenState(open);

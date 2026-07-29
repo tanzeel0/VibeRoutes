@@ -536,10 +536,41 @@
     margin-bottom: 2px;
   }
 
-  .day-location {
+.day-location {
     font-size: 14px;
     color: $muted;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
+}
+
+.day-places {
+  list-style: none;
+  margin: 0 0 $spacing-base;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.day-place {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: $body;
+  line-height: 1.35;
+}
+
+.day-place-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: $primary;
+}
+
+.day-place-name {
+  min-width: 0;
 }
 
 .day-cost {
@@ -743,11 +774,83 @@
 // ========================
 // Map Section
 // ========================
+.map-block {
+  margin-bottom: $spacing-xl;
+}
+
+.map-lead,
+.map-legend {
+  font-size: 13px;
+  color: $muted;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.map-lead {
+  margin-bottom: $spacing-sm;
+}
+
+.map-legend {
+  margin-top: $spacing-sm;
+}
+
+.map-day-jumps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+}
+
+.map-day-jump {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: $radius-full;
+  border: 1px solid $hairline;
+  background: $canvas;
+  color: $ink;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: $font-sans;
+  cursor: pointer;
+  transition: border-color $duration-fast $ease, background $duration-fast $ease,
+    color $duration-fast $ease;
+
+  &:hover,
+  &.is-active {
+    border-color: $primary;
+    background: $primary-soft;
+    color: $primary-active;
+  }
+}
+
+.map-day-jump-icon {
+  width: 10px;
+  height: 14px;
+  display: inline-block;
+  position: relative;
+  flex-shrink: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 10px;
+    height: 10px;
+    margin-left: -5px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    background: $primary;
+  }
+}
+
 .map-section {
   @include card-base;
   padding: 0;
   overflow: hidden;
-  margin-bottom: $spacing-xl;
+  margin: 0;
   height: 420px;
   position: relative;
   width: 100%;
@@ -979,9 +1082,20 @@
 
 .wizard-bubble {
   max-width: 80%;
+  min-width: min(100%, 280px);
+  width: fit-content;
   padding: $spacing-md $spacing-base;
   font-size: 16px;
   line-height: 1.5;
+  box-sizing: border-box;
+}
+
+.wizard-msg.ai .wizard-bubble {
+  min-width: min(80%, 320px);
+}
+
+.wizard-msg.user .wizard-bubble {
+  min-width: min(55%, 200px);
 }
 
 .wizard-input-area {
@@ -994,6 +1108,9 @@
   border-top: none;
   z-index: $z-input;
   pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
 
   > * {
     pointer-events: auto;
@@ -1006,6 +1123,7 @@
 
 .wizard-chip-row {
   max-width: 720px;
+  width: 100%;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -1354,12 +1472,14 @@
 
   .wizard-bubble {
     max-width: 92%;
+    min-width: min(92%, 260px);
     font-size: 15px;
     padding: $spacing-sm $spacing-md;
   }
 
   .wizard-input-area {
-    padding: $spacing-sm $spacing-base max($spacing-base, env(safe-area-inset-bottom));
+    padding: $spacing-base $spacing-base max($spacing-base, env(safe-area-inset-bottom));
+    gap: $spacing-md;
   }
 
   .wizard-chip-row {
@@ -1379,6 +1499,9 @@
 
   .wizard-text-row {
     gap: 8px;
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto;
   }
 
   .itinerary-title {

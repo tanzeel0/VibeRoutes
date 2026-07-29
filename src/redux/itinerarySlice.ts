@@ -124,7 +124,11 @@ async function streamGenerate(
         } else if (data.type === "meta") {
           dispatch(itinerarySlice.actions.setMeta(data.data as ItineraryPayload));
         } else if (data.type === "error") {
-          dispatch(itinerarySlice.actions.setError(data.data.message));
+          dispatch(
+            itinerarySlice.actions.setError(
+              "Could not build your itinerary right now. Please try again."
+            )
+          );
           return;
         }
       } catch {
@@ -143,7 +147,11 @@ async function streamGenerate(
       } else if (data.type === "meta") {
         dispatch(itinerarySlice.actions.setMeta(data.data as ItineraryPayload));
       } else if (data.type === "error") {
-        dispatch(itinerarySlice.actions.setError(data.data.message));
+        dispatch(
+          itinerarySlice.actions.setError(
+            "Could not build your itinerary right now. Please try again."
+          )
+        );
         return;
       }
     } catch {
@@ -220,13 +228,15 @@ const itinerarySlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(generateItinerary.rejected, (state, action) => {
+      .addCase(generateItinerary.rejected, (state) => {
         state.status = "error";
-        state.error = action.error.message || "Generation failed";
+        state.error =
+          "Could not build your itinerary right now. Please try again.";
       })
-      .addCase(modifyItinerary.rejected, (state, action) => {
+      .addCase(modifyItinerary.rejected, (state) => {
         state.status = "error";
-        state.error = action.error.message || "Could not update trip";
+        state.error =
+          "Could not update your trip right now. Please try again.";
       });
   },
 });

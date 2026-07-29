@@ -403,11 +403,12 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {((meta.route_geo?.waypoints?.length ?? 0) > 0 ||
-                  days.length > 0) && (
+                {days.length > 0 && (
                   <MapView
                     days={days}
-                    routeWaypoints={meta.route_geo?.waypoints ?? []}
+                    routeWaypoints={[]}
+                    destination={meta.destination}
+                    destinationOnly
                     activeDay={activeDay}
                     onDayClick={handleDayClick}
                   />

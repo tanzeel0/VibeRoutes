@@ -28,7 +28,7 @@ async function generateWithGroq(
   });
 
   if (!response.ok) {
-    throw new Error(`Groq API error: ${response.status}`);
+    throw new Error("LLM provider request failed");
   }
 
   const data = await response.json();

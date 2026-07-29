@@ -137,11 +137,12 @@ export default function ItineraryPage() {
         )}
       </div>
 
-      {((data.route_geo?.waypoints?.length ?? 0) > 0 ||
-        (data.itinerary?.length ?? 0) > 0) && (
+      {((data.itinerary?.length ?? 0) > 0) && (
         <MapView
           days={data.itinerary || []}
-          routeWaypoints={data.route_geo?.waypoints ?? []}
+          routeWaypoints={[]}
+          destination={data.destination}
+          destinationOnly
           activeDay={activeDay}
           onDayClick={handleDayClick}
         />

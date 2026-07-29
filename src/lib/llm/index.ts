@@ -1,14 +1,25 @@
 import { geminiClient } from "./geminiClient";
-import { groqClient } from "./groqClient";
 import type { LLMProvider } from "./geminiClient";
+import { runItineraryGraph, getModelLabel, getSelectedProvider } from "./langgraph";
+import type { GenerateRequestInput } from "@/lib/validation/itinerarySchema";
+import type { ItineraryPayload } from "@/types/itinerary";
 
-const selectedProvider = process.env.LLM_PROVIDER?.toLowerCase().trim() || "gemini";
-console.log(`[LLM] LLM_PROVIDER env var: "${process.env.LLM_PROVIDER}"`);
-console.log(`[LLM] Selected provider: ${selectedProvider}`);
+const selectedProvider = getSelectedProvider();
+
+/** Primary path: LangGraph generate → validate → retry (with legacy fallbacks). */
+const langGraphClient: LLMProvider = {
+  async generateItinerary(
+    input: GenerateRequestInput
+  ): Promise<ItineraryPayload> {
+    return runItineraryGraph(input);
+  },
+};
 
 const provider: LLMProvider =
-  selectedProvider === "groq" ? groqClient : geminiClient;
+  selectedProvider === "gemini" ? geminiClient : langGraphClient;
 
-console.log(`[LLM] Using ${selectedProvider === "groq" ? "Groq" : "Gemini"} provider`);
+export function getLlmModelLabel(): string {
+  return getModelLabel();
+}
 
 export default provider;

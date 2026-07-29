@@ -3,7 +3,7 @@ import { generateRequestSchema } from "@/lib/validation/itinerarySchema";
 import { findCachedItinerary, saveItinerary } from "@/lib/db/queries/itinerary";
 import { geocodeCity } from "@/lib/maps/geocode";
 import { ensureDayImages, ensureHeroImage } from "@/lib/images/unsplashClient";
-import llmClient from "@/lib/llm";
+import llmClient, { getLlmModelLabel } from "@/lib/llm";
 import type { ItineraryPayload, DayItinerary, VibeTag, PurposeTag } from "@/types/itinerary";
 import slugify from "slugify";
 import {
@@ -13,6 +13,8 @@ import {
   normalizeActivityCategory,
   toPricingVariants,
 } from "@/lib/costs/estimateTrip";
+import { PUBLIC_ERRORS, safeErrorLog } from "@/lib/security/sanitize";
+import { clientKey, rateLimit } from "@/lib/security/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -152,7 +154,7 @@ async function enrichItinerary(
   raw.ai_meta = {
     grounded: true,
     generated_at: new Date().toISOString(),
-    model: process.env.LLM_PROVIDER === "groq" ? "llama-3.3-70b" : "gemini-2.0-flash",
+    model: getLlmModelLabel(),
     verification_note:
       "Activities & cost ranges use destination rate tables (budget–mid). Verify operators and live prices before booking.",
   };
@@ -172,21 +174,37 @@ async function enrichItinerary(
 }
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimit({
+    key: clientKey(req, "generate"),
+    limit: 10,
+    windowMs: 60_000,
+  });
+  if (!limited.ok) {
+    return new Response(serializeError(PUBLIC_ERRORS.rateLimited), {
+      status: 429,
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Retry-After": String(limited.retryAfterSec),
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return new Response(serializeError("Invalid JSON body"), {
+    return new Response(serializeError(PUBLIC_ERRORS.validation), {
       status: 400,
-      headers: { "Content-Type": "text/event-stream" },
+      headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-store" },
     });
   }
 
   const parsed = generateRequestSchema.safeParse(body);
   if (!parsed.success) {
-    return new Response(serializeError(`Invalid input: ${parsed.error.issues[0]?.message}`), {
+    return new Response(serializeError(PUBLIC_ERRORS.validation), {
       status: 400,
-      headers: { "Content-Type": "text/event-stream" },
+      headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-store" },
     });
   }
 
@@ -259,14 +277,13 @@ export async function POST(req: NextRequest) {
 
         // Persist to DB (fire and forget)
         saveItinerary(itinerary).catch((err) => {
-          console.error("Failed to save itinerary:", err);
+          safeErrorLog("saveItinerary", err);
         });
 
         controller.close();
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Generation failed";
-        console.error("Generation error:", err);
-        send(serializeError(message));
+        safeErrorLog("generate", err);
+        send(serializeError(PUBLIC_ERRORS.generate));
         controller.close();
       }
     },
@@ -275,7 +292,7 @@ export async function POST(req: NextRequest) {
   return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache, no-transform",
+      "Cache-Control": "no-cache, no-store, no-transform",
       Connection: "keep-alive",
     },
   });

@@ -10,35 +10,46 @@ interface MapViewProps {
   routeWaypoints: GeoPoint[];
   activeDay: number | null;
   onDayClick: (day: number) => void;
+  /** City name for captions — destination-focused map on home */
+  destination?: string;
+  /** When true, only plot stop pins (no origin→destination route line) */
+  destinationOnly?: boolean;
 }
 
-function dayMarkerIcon(day: number, active: boolean): L.DivIcon {
-  const size = active ? 32 : 26;
-  const bg = active ? "#f97316" : "#22c55e";
-  return L.divIcon({
-    className: "vr-marker",
-    html: `<div style="
-      width:${size}px;height:${size}px;border-radius:50%;
-      background:${bg};color:#fff;font-weight:700;font-size:${active ? 12 : 11}px;
-      display:flex;align-items:center;justify-content:center;
-      border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25);
-      font-family:system-ui,sans-serif;
-    ">${day}</div>`,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-  });
+function pinSvg(fill: string): string {
+  return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M12 22s7-7.2 7-12.2A7 7 0 1 0 5 9.8C5 14.8 12 22 12 22z" fill="${fill}"/>
+    <circle cx="12" cy="9.5" r="2.6" fill="#fff"/>
+  </svg>`;
 }
 
-function routeMarkerIcon(label: string): L.DivIcon {
+function dayMarkerIcon(day: number, active: boolean, label: string): L.DivIcon {
+  const bg = active ? "var(--vr-primary, #ff385c)" : "#111827";
+  const ring = active ? "0 0 0 3px rgba(255,56,92,.25)" : "0 2px 8px rgba(0,0,0,.28)";
   return L.divIcon({
     className: "vr-marker",
-    html: `<div style="
-      width:14px;height:14px;border-radius:50%;
-      background:#ff385c;border:2px solid #fff;
-      box-shadow:0 2px 6px rgba(0,0,0,.25);
-    " title="${label}"></div>`,
-    iconSize: [14, 14],
-    iconAnchor: [7, 7],
+    html: `<div class="vr-pin ${active ? "is-active" : ""}" style="
+      display:flex;flex-direction:column;align-items:center;gap:2px;
+      transform:translateY(-6px);cursor:pointer;
+    " title="${label.replace(/"/g, "&quot;")}">
+      <div style="
+        width:36px;height:36px;border-radius:50%;
+        background:${bg};color:#fff;font-weight:700;font-size:12px;
+        display:flex;align-items:center;justify-content:center;gap:0;
+        border:2px solid #fff;box-shadow:${ring};
+        font-family:system-ui,sans-serif;position:relative;
+      ">
+        <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.22">${pinSvg("#fff")}</span>
+        <span style="position:relative;z-index:1">${day}</span>
+      </div>
+      <div style="
+        width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;
+        border-top:8px solid ${bg};filter:drop-shadow(0 1px 1px rgba(0,0,0,.2));
+      "></div>
+    </div>`,
+    iconSize: [36, 48],
+    iconAnchor: [18, 48],
+    popupAnchor: [0, -44],
   });
 }
 
@@ -47,6 +58,8 @@ export default function MapView({
   routeWaypoints,
   activeDay,
   onDayClick,
+  destination,
+  destinationOnly = true,
 }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -55,11 +68,15 @@ export default function MapView({
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const city =
+    destination ||
+    days.find((d) => d.location)?.location ||
+    "your destination";
+
   useEffect(() => {
     callbackRef.current = onDayClick;
   });
 
-  // Init map once
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
@@ -80,8 +97,6 @@ export default function MapView({
       layerRef.current = L.layerGroup().addTo(map);
       mapRef.current = map;
       setReady(true);
-
-      // Leaflet needs a resize after mount in flex layouts
       requestAnimationFrame(() => map.invalidateSize());
     } catch (err) {
       console.error("Map init error:", err);
@@ -96,7 +111,6 @@ export default function MapView({
     };
   }, []);
 
-  // Draw overlays when data / map ready
   useEffect(() => {
     const map = mapRef.current;
     const layers = layerRef.current;
@@ -105,7 +119,8 @@ export default function MapView({
     layers.clearLayers();
     const bounds = L.latLngBounds([]);
 
-    if (routeWaypoints.length >= 2) {
+    // Destination-only: skip long-haul origin→destination polyline on home
+    if (!destinationOnly && routeWaypoints.length >= 2) {
       const latlngs = routeWaypoints.map(
         (wp) => [wp.lat, wp.lng] as L.LatLngExpression
       );
@@ -114,37 +129,27 @@ export default function MapView({
         weight: 3,
         opacity: 0.65,
       }).addTo(layers);
-
-      routeWaypoints.forEach((wp) => {
-        L.marker([wp.lat, wp.lng], { icon: routeMarkerIcon(wp.name) })
-          .bindPopup(`<strong>${wp.name}</strong>`)
-          .addTo(layers);
-        bounds.extend([wp.lat, wp.lng]);
-      });
-    } else {
-      routeWaypoints.forEach((wp) => {
-        L.marker([wp.lat, wp.lng], { icon: routeMarkerIcon(wp.name) })
-          .bindPopup(`<strong>${wp.name}</strong>`)
-          .addTo(layers);
-        bounds.extend([wp.lat, wp.lng]);
-      });
     }
 
     days.forEach((day) => {
       const isActive = activeDay === day.day;
-      (day.places_visited || []).forEach((place) => {
-        if (
-          typeof place.lat !== "number" ||
-          typeof place.lng !== "number" ||
-          (place.lat === 0 && place.lng === 0)
-        ) {
-          return;
-        }
+      const places = (day.places_visited || []).filter(
+        (place) =>
+          typeof place.lat === "number" &&
+          typeof place.lng === "number" &&
+          !(place.lat === 0 && place.lng === 0)
+      );
+
+      places.forEach((place) => {
         L.marker([place.lat, place.lng], {
-          icon: dayMarkerIcon(day.day, isActive),
+          icon: dayMarkerIcon(
+            day.day,
+            isActive,
+            `Day ${day.day}: ${place.name}`
+          ),
         })
           .bindPopup(
-            `<strong>Day ${day.day}: ${day.title}</strong><br/>${place.name}`
+            `<div class="vr-map-popup"><strong>Day ${day.day}: ${day.title}</strong><br/><span>${place.name}</span></div>`
           )
           .on("click", () => callbackRef.current(day.day))
           .addTo(layers);
@@ -153,19 +158,49 @@ export default function MapView({
     });
 
     if (bounds.isValid()) {
-      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 12 });
+      map.fitBounds(bounds, { padding: [48, 48], maxZoom: 14 });
     }
 
     requestAnimationFrame(() => map.invalidateSize());
-  }, [days, routeWaypoints, activeDay, ready]);
+  }, [days, routeWaypoints, activeDay, ready, destinationOnly]);
+
+  const dayNumbers = days.map((d) => d.day);
 
   return (
-    <div className="map-section">
-      {error ? (
-        <div className="map-fallback">{error}</div>
-      ) : (
-        <div ref={containerRef} className="map-canvas" />
+    <div className="map-block">
+      <p className="map-lead">
+        Real streets inside {city} — location pins show which stops sit near
+        each other. Tap a pin or day to jump through the itinerary.
+      </p>
+
+      <div className="map-section">
+        {error ? (
+          <div className="map-fallback">{error}</div>
+        ) : (
+          <div ref={containerRef} className="map-canvas" />
+        )}
+      </div>
+
+      {dayNumbers.length > 0 && (
+        <div className="map-day-jumps" aria-label="Jump to day">
+          {dayNumbers.map((day) => (
+            <button
+              key={day}
+              type="button"
+              className={`map-day-jump ${activeDay === day ? "is-active" : ""}`}
+              onClick={() => onDayClick(day)}
+            >
+              <span className="map-day-jump-icon" aria-hidden />
+              Day {day}
+            </button>
+          ))}
+        </div>
       )}
+
+      <p className="map-legend">
+        Street map of {city} only — numbered location pins show what’s near
+        what.
+      </p>
     </div>
   );
 }

@@ -1,25 +1,17 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAppShell, type ThemeId } from "./AppShellContext";
+import { useAppShell } from "./AppShellContext";
 import {
   MapPin,
   Trash2,
   PanelLeftClose,
   PanelLeftOpen,
   Settings,
-  Sun,
-  Moon,
   Monitor,
   Menu,
   X,
 } from "lucide-react";
-
-const THEMES: { id: ThemeId; label: string; icon: typeof Sun }[] = [
-  { id: "light", label: "Light", icon: Sun },
-  { id: "dark", label: "Dark", icon: Moon },
-  { id: "system", label: "System", icon: Monitor },
-];
 
 function isMobileViewport() {
   return typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches;
@@ -35,7 +27,6 @@ export function TripsSidebar() {
     setPrefsOpen,
   } = useAppShell();
 
-  // Lock body scroll while the mobile drawer is open
   useEffect(() => {
     if (!sidebarOpen || !isMobileViewport()) return;
     const prev = document.body.style.overflow;
@@ -162,7 +153,7 @@ export function TripsSidebar() {
 }
 
 export function PreferencesModal() {
-  const { prefsOpen, setPrefsOpen, theme, setTheme } = useAppShell();
+  const { prefsOpen, setPrefsOpen } = useAppShell();
 
   if (!prefsOpen) return null;
 
@@ -187,21 +178,14 @@ export function PreferencesModal() {
 
         <div className="prefs-section">
           <h3>Theme</h3>
-          <p className="prefs-hint">Applies to the whole site.</p>
-          <div className="theme-grid theme-grid-3">
-            {THEMES.map((t) => {
-              const Icon = t.icon;
-              return (
-                <button
-                  key={t.id}
-                  className={`theme-swatch ${theme === t.id ? "selected" : ""}`}
-                  onClick={() => setTheme(t.id)}
-                >
-                  <Icon size={16} />
-                  {t.label}
-                </button>
-              );
-            })}
+          <p className="prefs-hint">
+            Matches your device setting (light or dark).
+          </p>
+          <div className="theme-grid">
+            <button type="button" className="theme-swatch selected" disabled>
+              <Monitor size={16} />
+              System
+            </button>
           </div>
         </div>
 
