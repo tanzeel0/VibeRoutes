@@ -50,13 +50,18 @@ export function useAppShell() {
   return ctx;
 }
 
-function normalizeTheme(_raw: string | null): ThemeId {
-  // App always follows the OS / browser preference
+function normalizeTheme(raw: string | null): ThemeId {
+  if (raw === "light" || raw === "dark" || raw === "system") return raw;
+  // First visit / unknown value → system
   return "system";
 }
 
-function resolveTheme(_theme: ThemeId): "light" | "dark" {
-  if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+function resolveTheme(theme: ThemeId): "light" | "dark" {
+  if (theme === "light" || theme === "dark") return theme;
+  if (
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+  ) {
     return "dark";
   }
   return "light";
@@ -86,16 +91,17 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!hydrated) return;
     const apply = () => {
-      document.documentElement.setAttribute("data-theme", resolveTheme("system"));
+      document.documentElement.setAttribute("data-theme", resolveTheme(theme));
     };
     apply();
-    localStorage.setItem(THEME_STORAGE, "system");
+    localStorage.setItem(THEME_STORAGE, theme);
 
+    if (theme !== "system") return;
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = () => apply();
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
-  }, [hydrated]);
+  }, [theme, hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -106,9 +112,8 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
     }
   }, [trips, hydrated]);
 
-  // Theme is locked to system — keep setter for API compat but ignore overrides
-  const setTheme = useCallback((_t: ThemeId) => {
-    setThemeState("system");
+  const setTheme = useCallback((t: ThemeId) => {
+    setThemeState(t);
   }, []);
 
   // On phones/tablets, keep the drawer closed by default (don't write localStorage)
