@@ -90,7 +90,7 @@ export default function ItineraryPage() {
   }
 
   return (
-    <div className="app-container">
+    <div className="app-frame">
       <header className="app-header">
         <div className="header-brand">
           <BrandLogo />
@@ -107,6 +107,7 @@ export default function ItineraryPage() {
         </div>
       </header>
 
+      <div className="app-container">
       <div className="itinerary-header">
         <h2 className="itinerary-title">{data.title}</h2>
         <div className="itinerary-meta">
@@ -166,6 +167,7 @@ export default function ItineraryPage() {
         <button className="btn-share" onClick={handleShare}>
           <Share2 size={16} /> Copy Share Link
         </button>
+      </div>
       </div>
     </div>
   );

@@ -168,91 +168,107 @@ export default function ChatWizard({ initialPrompt, onComplete }: ChatWizardProp
 
   return (
     <div className="chat-wizard">
-      <div className="wizard-messages">
-        {messages.map((msg) => (
-          <div key={msg.id} className={`wizard-msg ${msg.role}`}>
-            {msg.role === "ai" && (
-              <div className="avatar-circle ai-avatar">
+      <div className="wizard-shell">
+        <div className="wizard-messages">
+          {messages.map((msg, index) => (
+            <div
+              key={msg.id}
+              className={`wizard-msg ${msg.role}`}
+              style={{ ["--vr-stagger" as string]: `${Math.min(index, 8) * 45}ms` }}
+            >
+              {msg.role === "ai" ? (
+                <div className="avatar-circle ai-avatar" aria-hidden>
+                  <Sparkles size={14} />
+                </div>
+              ) : (
+                <div className="avatar-circle user-avatar" aria-hidden>
+                  You
+                </div>
+              )}
+              <div className={`wizard-bubble ${msg.role}`}>{msg.text}</div>
+            </div>
+          ))}
+
+          {isThinking && (
+            <div
+              className="wizard-msg ai"
+              style={{ ["--vr-stagger" as string]: "40ms" }}
+            >
+              <div className="avatar-circle ai-avatar" aria-hidden>
                 <Sparkles size={14} />
               </div>
-            )}
-            <div className={`wizard-bubble ${msg.role}`}>{msg.text}</div>
-          </div>
-        ))}
-
-        {isThinking && (
-          <div className="wizard-msg ai">
-            <div className="avatar-circle ai-avatar">
-              <Sparkles size={14} />
+              <div className="wizard-bubble ai wizard-thinking" aria-live="polite">
+                <span className="wizard-thinking-label">Planning</span>
+                <span className="loading-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </span>
+              </div>
             </div>
-            <div className="wizard-bubble ai thinking-text">
-              Thinking
-              <span className="loading-dots">
-                <span></span>
-                <span></span>
-                <span></span>
-              </span>
-            </div>
-          </div>
-        )}
+          )}
 
-        <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
       {!isComplete && (
         <div className="wizard-input-area">
-          {suggestions && suggestions.length > 0 && !isThinking && (
-            <div className="wizard-chip-row">
-              <div className="wizard-chips">
-                {suggestions.map((chip) => (
-                  <button
-                    key={chip}
-                    type="button"
-                    className="wizard-chip"
-                    onClick={() => handleSuggestion(chip)}
-                  >
-                    {chip}
-                  </button>
-                ))}
+          <div className="wizard-composer">
+            {suggestions && suggestions.length > 0 && !isThinking && (
+              <div className="wizard-chip-row">
+                <p className="wizard-chip-label">Quick picks</p>
+                <div className="wizard-chips">
+                  {suggestions.map((chip) => (
+                    <button
+                      key={chip}
+                      type="button"
+                      className="wizard-chip"
+                      onClick={() => handleSuggestion(chip)}
+                    >
+                      {chip}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="wizard-text-row">
-            <input
-              ref={textInputRef}
-              type="text"
-              className="wizard-text-input"
-              placeholder={
-                isThinking
-                  ? "Waiting for reply..."
-                  : "Ask anything or answer the question..."
-              }
-              value={inputValue}
-              disabled={isThinking}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleTextSubmit();
-              }}
-            />
-            <button
-              className="prompt-submit"
-              onClick={handleTextSubmit}
-              disabled={isThinking || !inputValue.trim()}
-              type="button"
-              aria-label="Send"
-            >
-              <Send size={18} />
-            </button>
-          </div>
-
-          {error && (
-            <div className="wizard-skip">
-              <button className="wizard-chip" type="button" onClick={handleRetry}>
-                Retry AI
+            <div className="wizard-text-row prompt-input-wrapper">
+              <input
+                ref={textInputRef}
+                type="text"
+                className="wizard-text-input"
+                placeholder={
+                  isThinking
+                    ? "Waiting for reply..."
+                    : "Ask anything or answer the question..."
+                }
+                value={inputValue}
+                disabled={isThinking}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleTextSubmit();
+                }}
+              />
+              <button
+                className="prompt-submit"
+                onClick={handleTextSubmit}
+                disabled={isThinking || !inputValue.trim()}
+                type="button"
+                aria-label="Send"
+              >
+                <Send size={18} />
               </button>
             </div>
-          )}
+
+            {error && (
+              <div className="wizard-skip">
+                <button className="wizard-chip" type="button" onClick={handleRetry}>
+                  Retry
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

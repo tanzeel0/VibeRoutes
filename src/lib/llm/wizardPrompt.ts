@@ -4,7 +4,8 @@ export type { WizardGraphResult as WizardAiResponse } from "./langgraph";
 
 /**
  * Conversational trip intake via LangGraph:
- * classify → (refuse | answer | extract) → ask missing | finalize
+ * classify → (refuse | answer | extract) → ask until clear | finalize on ready
+ * Asks clarifying questions; does not anticipate or invent details.
  * Hard-gated to India travel planning only.
  */
 export async function runWizardTurn(

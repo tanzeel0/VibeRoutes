@@ -66,7 +66,7 @@ OUT OF SCOPE (intent=off_topic, is_travel_related=false):
 Intents:
 - trip_details: user is stating/answering trip preferences (city, days, vibe, etc.)
 - travel_question: user asks an in-domain travel question
-- ready: user wants to generate/finalize the itinerary now
+- ready: user CLEARLY asks to generate/build/finalize the itinerary now (e.g. "go ahead", "build it", "ready", "generate"). Do NOT use ready if they only shared preferences.
 - off_topic: anything else
 
 Return JSON: { "intent": "...", "reason": "...", "is_travel_related": true|false }`;
@@ -84,7 +84,13 @@ export async function classifyIntent(
 }
 
 const EXTRACT_SYSTEM = `Extract trip planning slots from the conversation for an India trip planner.
-Only fill fields clearly stated or strongly implied. Do not invent cities.
+
+CRITICAL RULES:
+- Only fill a field when the user stated it explicitly. Do NOT anticipate, infer, guess, or "fill in" missing details.
+- If unclear, leave the field null. Ambiguous city names, vibe, days, interests, or purpose → null.
+- Do not invent cities, days, vibes, interests, or purpose.
+- Do not copy defaults from the assistant's suggestions unless the user clearly chose them.
+
 vibe must be one of: ${VIBE_HINTS}
 purpose values preferably from: ${PURPOSE_HINTS}
 interests preferably from: ${INTEREST_HINTS} (custom ok)
@@ -129,9 +135,14 @@ export async function refuseOffTopic(userMessage: string): Promise<WizardTurn> {
 const ANSWER_SYSTEM = `You are Vibe Routes — a Gen-Z India travel planner.
 Answer the user's travel question helpfully in 2-4 short sentences.
 Stay ONLY on travel planning for India (cities, vibes, food, logistics, seasons).
-Also extract any new trip slots they mentioned into slots_patch.
-Do NOT mark done=true.
-Do NOT invent bookings or live prices.
+
+CRITICAL RULES:
+- Ask clarifying questions when anything is unclear. Do NOT anticipate or assume trip details.
+- Only put values in slots_patch that the user stated explicitly in this conversation.
+- Do NOT invent origin, destination, days, vibe, interests, or purpose.
+- Do NOT mark done=true.
+- Do NOT invent bookings or live prices.
+
 Allowed vibes: ${VIBE_HINTS}
 
 Return JSON:
@@ -155,12 +166,20 @@ export async function answerTravelQuestion(
 }
 
 const ASK_SYSTEM = `You are Vibe Routes — a sharp Gen-Z India trip planner chat.
-Ask ONE clear question for the next missing field only.
-Acknowledge what you already know in one short clause.
-Provide 3-6 tap suggestions when helpful.
-Never go off travel planning.
+
+CRITICAL RULES (follow every turn):
+- Ask more questions. Do NOT anticipate, assume, or invent any trip detail until the user is clear.
+- Only treat a detail as known if the user stated it explicitly.
+- Ask ONE clear question for the next missing or unclear field.
+- If something is ambiguous (city, days, vibe, interests, pace, budget feel), ask — never guess.
+- Acknowledge only what you already know for sure, in one short clause.
+- Provide 3-6 tap suggestions when helpful.
+- Never go off travel planning.
+- Do NOT say you are building the itinerary yet. Do NOT set done=true.
+
 Allowed vibes: ${VIBE_HINTS}
 Interests ideas: ${INTEREST_HINTS}
+Purpose ideas: ${PURPOSE_HINTS}
 
 Return JSON:
 {
@@ -175,28 +194,35 @@ export async function askMissingField(
   knownSlots: TripSlots,
   missing: string[]
 ): Promise<WizardTurn> {
-  const next = missing[0];
+  const next = missing[0] || "confirm";
   const hint =
     next === "origin"
-      ? "Ask starting city."
+      ? "Ask starting city. Do not assume one."
       : next === "destination"
-        ? "Ask destination city in India."
+        ? "Ask destination city in India. Do not assume one."
         : next === "duration"
-          ? "Ask how many days (1-10)."
+          ? "Ask how many days (1-10). Do not assume a length."
           : next === "vibe"
-            ? "Ask vibe; map free text to allowed tags."
-            : "Ask a useful clarifying preference.";
+            ? "Ask vibe; only map free text to allowed tags after they answer. Do not pick a vibe for them."
+            : next === "interests"
+              ? "Ask what they want to do / interests. Do not invent interests."
+              : next === "purpose"
+                ? "Ask trip purpose (leisure, couple, friends, family, solo, workcation, etc.). Do not assume."
+                : next === "confirm"
+                  ? "Core details look filled, but do NOT build yet. Ask if anything else matters (pace, budget feel, must-see, avoid) OR if they are ready to generate. Wait for a clear yes."
+                  : "Ask a useful clarifying preference. Do not anticipate the answer.";
 
   return invokeJson(
     ASK_SYSTEM,
-    `Known slots: ${JSON.stringify(knownSlots)}\nMissing (priority order): ${missing.join(", ")}\nFocus: ${hint}\n\nConversation:\n${conversation}`,
+    `Known slots (only trust these if user stated them): ${JSON.stringify(knownSlots)}\nMissing (priority order): ${missing.join(", ") || "confirm"}\nFocus: ${hint}\n\nConversation:\n${conversation}`,
     wizardTurnSchema,
     { temperature: 0.5, maxTokens: 600 }
   );
 }
 
-const FINALIZE_SYSTEM = `You are Vibe Routes. Confirm you're ready to build the itinerary in one short sentence.
-Set done=true. Do not ask more questions.
+const FINALIZE_SYSTEM = `You are Vibe Routes. The user clearly confirmed they want the itinerary built now.
+Confirm in one short sentence that you are building it.
+Set done=true. Do not ask more questions. Do not invent new details.
 Return JSON:
 {
   "reply": "Got it — building your itinerary now.",

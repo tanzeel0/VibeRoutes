@@ -99,15 +99,17 @@ async function nodeExtract(state: typeof WizardState.State) {
 
 async function nodeRouteSlots(state: typeof WizardState.State) {
   const missing = missingSlotKeys(state.slots);
-  // Interests optional — if user said ready and only interests missing, still ok
-  return { missing, done: missing.length === 0 };
+  return { missing, done: false };
 }
 
 async function nodeAsk(state: typeof WizardState.State) {
+  // If core slots are filled but user hasn't clearly said "ready", ask to confirm
+  const askFor =
+    state.missing.length > 0 ? state.missing : (["confirm"] as string[]);
   const turn = await askMissingField(
     state.conversation,
     state.slots,
-    state.missing
+    askFor
   );
   // Keep travel Q&A context when we also need the next slot question
   const reply =
@@ -122,18 +124,8 @@ async function nodeAsk(state: typeof WizardState.State) {
 }
 
 async function nodeFinalize(state: typeof WizardState.State) {
-  // Default interests/purpose if still empty
-  const slots: TripSlots = {
-    ...state.slots,
-    interests:
-      state.slots.interests && state.slots.interests.length > 0
-        ? state.slots.interests
-        : ["street food"],
-    purpose:
-      state.slots.purpose && state.slots.purpose.length > 0
-        ? state.slots.purpose
-        : ["leisure"],
-  };
+  // Only finalize with what the user actually provided — no invented defaults
+  const slots: TripSlots = { ...state.slots };
   const turn = await finalizeReply(slots);
   return {
     slots,
@@ -155,10 +147,14 @@ function routeAfterClassify(
 function routeAfterSlots(
   state: typeof WizardState.State
 ): "ask" | "finalize" | "stay" {
+  // Never anticipate — keep asking until slots are clear
   if (state.missing.length > 0) return "ask";
-  // Don't auto-generate when the user only asked a travel question
+  // Don't auto-generate on travel Q&A
   if (state.intent === "travel_question") return "stay";
-  return "finalize";
+  // Only build when the user clearly said they are ready
+  if (state.intent === "ready") return "finalize";
+  // Slots look full but user hasn't confirmed — ask, don't assume
+  return "ask";
 }
 
 const wizardGraph = new StateGraph(WizardState)

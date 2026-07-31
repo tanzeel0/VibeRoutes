@@ -1,0 +1,106 @@
+// ========================
+// Motion foundation
+// Editorial AI-product pacing (structure & timing only — brand colors stay local)
+// ========================
+
+$ease-out-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+$ease-soft: cubic-bezier(0.2, 0.9, 0.3, 1);
+$ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+
+$motion-instant: 120ms;
+$motion-fast: 180ms;
+$motion-normal: 280ms;
+$motion-slow: 420ms;
+$motion-reveal: 520ms;
+
+@keyframes vr-fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes vr-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes vr-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes vr-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes vr-composer-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes vr-soft-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes vr-dot-bounce {
+  0%,
+  80%,
+  100% {
+    opacity: 0.28;
+    transform: translateY(0) scale(0.85);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1);
+  }
+}
+
+@mixin motion-reveal($duration: $motion-reveal) {
+  animation: vr-fade-rise $duration $ease-out-editorial both;
+}
+
+@mixin motion-message {
+  animation: vr-message-in $motion-reveal $ease-out-editorial both;
+  animation-delay: var(--vr-stagger, 0ms);
+}
+
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    animation: none !important;
+    transition: none !important;
+  }
+}

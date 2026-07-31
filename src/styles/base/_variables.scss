@@ -35,39 +35,41 @@ $legal-link: #428bff;
 $scrim: #000000;
 
 // Layout
-$max-width: 1280px;
+$max-width: 1200px;
 $radius-xs: 4px;
-$radius-sm: 8px;
-$radius-md: 14px;
-$radius-lg: 20px;
-$radius-xl: 32px;
+$radius-sm: 6px;
+$radius-md: 8px;
+$radius-lg: 12px;
+$radius-xl: 16px;
 $radius-full: 9999px;
 
-// Spacing (4px base, 2px micro-step)
-$spacing-xxs: 2px;
-$spacing-xs: 4px;
-$spacing-sm: 8px;
-$spacing-md: 12px;
+// Spacing (4px base)
+$spacing-xxs: 4px;
+$spacing-xs: 8px;
+$spacing-sm: 12px;
+$spacing-md: 16px;
 $spacing-base: 16px;
 $spacing-lg: 24px;
 $spacing-xl: 32px;
 $spacing-xxl: 48px;
-$spacing-section: 64px;
+$spacing-section: 96px;
 
-// Typography
-$font-sans: var(--font-sans), "DM Sans", system-ui, sans-serif;
-$font-display: var(--font-display), "Fraunces", Georgia, serif;
+// Typography — editorial split: display serif + humanist sans
+$font-sans: var(--font-sans), "DM Sans", Inter, system-ui, sans-serif;
+$font-display: var(--font-display), "Fraunces", "Cormorant Garamond", Georgia, serif;
 $font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-// Elevation (single tier)
-$shadow-card: rgba(0, 0, 0, 0.02) 0 0 0 1px, rgba(0, 0, 0, 0.04) 0 2px 6px 0,
-  rgba(0, 0, 0, 0.1) 0 4px 8px 0;
+// Elevation — color-block first, shadow rare
+$shadow-soft: 0 1px 3px rgba(20, 20, 19, 0.08);
+$shadow-card: $shadow-soft;
 
-// Transitions
-$ease: cubic-bezier(0.2, 0.9, 0.3, 1);
-$duration-fast: 160ms;
-$duration-normal: 250ms;
-$duration-slow: 400ms;
+// Transitions / motion foundation
+$ease: cubic-bezier(0.22, 1, 0.36, 1);
+$ease-soft: cubic-bezier(0.2, 0.9, 0.3, 1);
+$duration-fast: 180ms;
+$duration-normal: 280ms;
+$duration-slow: 420ms;
+$duration-reveal: 520ms;
 
 // Z-index
 $z-header: 100;

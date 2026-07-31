@@ -112,6 +112,8 @@ export function missingSlotKeys(slots: TripSlots): string[] {
   if (!slots.destination?.trim()) missing.push("destination");
   if (!slots.days || slots.days < 1) missing.push("duration");
   if (!slots.vibe) missing.push("vibe");
+  if (!slots.interests?.length) missing.push("interests");
+  if (!slots.purpose?.length) missing.push("purpose");
   return missing;
 }
 

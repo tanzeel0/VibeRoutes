@@ -1,39 +1,68 @@
 @use "base/reset";
 @use "base/variables" as *;
 @use "base/mixins" as *;
+@use "base/motion" as motion;
 @use "base/themes";
 @use "themes/vibes";
 
 // ========================
-// App Container
+// App frame — header full-bleed; content width-limited
 // ========================
+.app-frame {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  align-self: stretch;
+  min-height: 100%;
+  width: 100%;
+  max-width: none;
+}
+
 .app-container {
   max-width: $max-width;
   margin: 0 auto;
-  min-height: 100vh;
+  width: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
   padding: 0 $spacing-lg;
+  box-sizing: border-box;
 }
 
 // ========================
-// Header (80px, gradient fade like footer input bar)
+// Header — full main-column width (not capped by chat 720px)
 // ========================
+$header-height: 80px;
+
 .app-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 80px;
-  padding: 0;
+  align-self: stretch;
+  width: 100%;
+  max-width: none;
+  height: $header-height;
+  min-height: $header-height;
+  max-height: $header-height;
+  padding: 0 $spacing-lg;
   position: sticky;
   top: 0;
+  flex-shrink: 0;
+  overflow: hidden;
   background: linear-gradient(
     to bottom,
     $canvas 55%,
     transparent 100%
   );
-  border-bottom: none;
+  border-bottom: 1px solid $hairline-soft;
   z-index: $z-header;
+  box-sizing: border-box;
+}
+
+.app-shell-main > .app-frame > .app-header {
+  width: 100%;
+  max-width: none;
 }
 
 .brand {
@@ -42,6 +71,8 @@
   gap: 10px;
   text-decoration: none;
   color: $ink;
+  min-width: 0;
+  height: 40px;
 }
 
 .brand-logo-img {
@@ -70,12 +101,16 @@
   color: $ink;
   letter-spacing: -0.3px;
   font-family: $font-display;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .header-actions {
   display: flex;
-  gap: $spacing-sm;
+  gap: 8px;
   align-items: center;
+  flex-shrink: 0;
+  height: 40px;
 }
 
 .btn-action {
@@ -168,11 +203,12 @@
 .hero-title {
   font-family: $font-display;
   font-size: clamp(36px, 6vw, 56px);
-  font-weight: 700;
-  line-height: 1.1;
+  font-weight: 400;
+  line-height: 1.08;
   color: $ink;
   margin-bottom: 14px;
   letter-spacing: -0.03em;
+  @include motion.motion-reveal($duration-reveal);
 }
 
 .hero-subtitle {
@@ -181,6 +217,8 @@
   max-width: 520px;
   margin: 0 auto;
   line-height: 1.55;
+  animation: vr-fade-rise $duration-reveal $ease both;
+  animation-delay: 80ms;
 }
 
 // ========================
@@ -219,13 +257,15 @@
 .prompt-input-wrapper {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   background: var(--vr-input-bg);
   border: 1px solid $hairline;
   border-radius: $radius-full;
-  padding: 6px 6px 6px 20px;
+  padding: 8px 8px 8px 20px;
+  min-height: 52px;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
   transition: border-color $duration-fast $ease, opacity $duration-fast $ease;
+  box-sizing: border-box;
 
   &:focus-within {
     border-color: $primary;
@@ -257,32 +297,40 @@
 }
 
 .prompt-submit {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
+  --prompt-submit-size: 36px;
+  width: var(--prompt-submit-size);
+  height: var(--prompt-submit-size);
+  min-width: var(--prompt-submit-size);
+  min-height: var(--prompt-submit-size);
+  aspect-ratio: 1 / 1;
+  border-radius: $radius-full;
   background: $primary;
   color: $on-primary;
   border: none;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  flex-shrink: 0;
+  flex: 0 0 var(--prompt-submit-size);
   margin: 0;
   padding: 0;
   line-height: 0;
-  transition: background $duration-fast $ease;
+  overflow: hidden;
+  transition: background $duration-fast $ease, transform $duration-fast $ease,
+    opacity $duration-fast $ease;
 
   svg {
     display: block;
+    flex-shrink: 0;
   }
 
-  &:hover {
+  &:active:not(:disabled) {
     background: $primary-active;
+    transform: scale(0.97);
   }
 
   &:disabled {
-    opacity: 0.4;
+    opacity: 0.45;
     cursor: not-allowed;
   }
 }
@@ -485,23 +533,25 @@
 // Day Card
 // ========================
 .day-card {
-  background: $canvas;
+  background: $surface-soft;
   border: 1px solid $hairline;
-  border-radius: $radius-md;
-  padding: $spacing-lg;
+  border-radius: $radius-lg;
+  padding: $spacing-xl;
   margin-bottom: $spacing-base;
   cursor: pointer;
-  transition: border-color $duration-normal $ease, box-shadow $duration-normal $ease;
+  transition: border-color $duration-normal $ease, box-shadow $duration-normal $ease,
+    transform $duration-normal $ease;
   position: relative;
+  animation: vr-fade-rise $duration-reveal $ease both;
+  @include motion.reduced-motion;
 
-  &:hover {
+  &:active {
     border-color: $primary;
-    box-shadow: $shadow-card;
+    transform: scale(0.995);
   }
 
   &.highlight {
     border-color: $primary;
-    border-width: 2px;
     box-shadow: 0 0 0 3px var(--vr-primary-soft);
   }
 }
@@ -918,34 +968,22 @@
 // ========================
 .loading-dots {
   display: inline-flex;
-  gap: 4px;
+  gap: 5px;
+  align-items: center;
 
   span {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     background: currentColor;
-    animation: dot-pulse 1.4s infinite ease-in-out;
+    animation: vr-dot-bounce 1.2s $ease-soft infinite;
 
     &:nth-child(2) {
-      animation-delay: 0.16s;
+      animation-delay: 0.14s;
     }
     &:nth-child(3) {
-      animation-delay: 0.32s;
+      animation-delay: 0.28s;
     }
-  }
-}
-
-@keyframes dot-pulse {
-  0%,
-  80%,
-  100% {
-    opacity: 0.3;
-    transform: scale(0.8);
-  }
-  40% {
-    opacity: 1;
-    transform: scale(1);
   }
 }
 
@@ -1030,127 +1068,172 @@
 // ========================
 // Wizard Page
 // ========================
+$wizard-width: 720px;
+
 .wizard-page {
   flex: 1;
   display: flex;
   flex-direction: column;
-  max-width: 720px;
+  min-height: 0;
+  max-width: $wizard-width;
   margin: 0 auto;
   width: 100%;
-  padding: $spacing-xl 0 140px;
+  padding: $spacing-xl 0 0;
 }
 
 .chat-wizard {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  width: 100%;
+}
+
+.wizard-shell {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  width: 100%;
+  max-width: $wizard-width;
+  margin: 0 auto;
 }
 
 .wizard-messages {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: $spacing-base;
-  padding: $spacing-sm 0 $spacing-lg;
+  gap: $spacing-md;
+  padding: $spacing-sm 0 $spacing-xl;
 }
 
 .wizard-msg {
   display: flex;
-  gap: $spacing-md;
-  animation: slideUpFade 0.35s $ease forwards;
+  align-items: flex-end;
+  gap: $spacing-sm;
+  width: 100%;
+  @include motion.motion-message;
+  @include motion.reduced-motion;
 
   &.user {
-    justify-content: flex-end;
+    flex-direction: row-reverse;
   }
 
   &.user .wizard-bubble {
     background: $primary;
     color: $on-primary;
-    border-radius: $radius-md $radius-md 4px $radius-md;
-  }
-
-  &.ai {
-    align-items: flex-start;
+    border-radius: $radius-lg $radius-lg $radius-xs $radius-lg;
   }
 
   &.ai .wizard-bubble {
     background: $surface-soft;
     color: $ink;
-    border-radius: $radius-md $radius-md $radius-md 4px;
+    border: 1px solid $hairline-soft;
+    border-radius: $radius-lg $radius-lg $radius-lg $radius-xs;
+  }
+
+  .avatar-circle {
+    width: 32px;
+    height: 32px;
+    font-size: 11px;
   }
 }
 
 .wizard-bubble {
-  max-width: 80%;
-  min-width: min(100%, 280px);
+  max-width: min(78%, 520px);
   width: fit-content;
-  padding: $spacing-md $spacing-base;
-  font-size: 16px;
-  line-height: 1.5;
+  min-width: 0;
+  padding: 12px 16px;
+  font-size: 15px;
+  line-height: 1.55;
+  font-weight: 400;
   box-sizing: border-box;
+  word-break: break-word;
 }
 
-.wizard-msg.ai .wizard-bubble {
-  min-width: min(80%, 320px);
+.wizard-thinking {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
 }
 
-.wizard-msg.user .wizard-bubble {
-  min-width: min(55%, 200px);
+.wizard-thinking-label {
+  color: $muted;
+  font-weight: 500;
+  animation: vr-soft-pulse 1.6s $ease-soft infinite;
 }
 
 .wizard-input-area {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, $canvas 55%, transparent 100%);
-  padding: $spacing-md $spacing-lg $spacing-lg;
-  border-top: none;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+  background: linear-gradient(to top, $canvas 70%, transparent 100%);
+  padding: $spacing-md 0 max($spacing-lg, env(safe-area-inset-bottom));
   z-index: $z-input;
   pointer-events: none;
   display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.wizard-composer {
+  pointer-events: auto;
+  width: 100%;
+  max-width: $wizard-width;
+  display: flex;
   flex-direction: column;
   gap: $spacing-md;
-
-  > * {
-    pointer-events: auto;
-  }
-
-  .wizard-text-input {
-    background: var(--vr-input-bg);
-  }
+  padding: $spacing-base;
+  border: 1px solid $hairline;
+  border-radius: $radius-lg;
+  background: var(--vr-input-bg, $canvas);
+  box-shadow: $shadow-soft;
+  box-sizing: border-box;
+  animation: vr-composer-in $duration-reveal $ease both;
+  @include motion.reduced-motion;
 }
 
 .wizard-chip-row {
-  max-width: 720px;
   width: 100%;
-  margin: 0 auto;
   display: flex;
-  align-items: center;
-  gap: $spacing-md;
+  flex-direction: column;
+  align-items: stretch;
+  gap: $spacing-sm;
+}
+
+.wizard-chip-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: $muted;
 }
 
 .wizard-chips {
   display: flex;
   flex-wrap: wrap;
   gap: $spacing-sm;
-  flex: 1;
+  width: 100%;
 }
 
 .wizard-chip {
-  padding: $spacing-sm $spacing-base;
+  padding: 8px 14px;
   border-radius: $radius-full;
   border: 1px solid $hairline;
   background: $canvas;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: $ink;
   cursor: pointer;
-  transition: border-color $duration-fast $ease;
+  transition: border-color $duration-fast $ease, background $duration-fast $ease,
+    color $duration-fast $ease;
   font-family: $font-sans;
 
   &:hover {
     border-color: $primary;
+    background: $primary-soft;
+    color: $primary-active;
   }
 
   &.selected {
@@ -1161,37 +1244,56 @@
 }
 
 .wizard-text-row {
-  max-width: 720px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  width: 100%;
+  flex-shrink: 0;
+  box-sizing: border-box;
+
+  &.prompt-input-wrapper {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    min-height: 52px;
+    padding: 8px 8px 8px 18px;
+  }
 }
 
 .wizard-text-input {
   flex: 1;
-  padding: $spacing-md $spacing-base;
-  border: 1px solid $hairline;
-  border-radius: $radius-full;
+  min-width: 0;
+  width: 100%;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
   font-size: 16px;
   font-family: $font-sans;
+  font-weight: 400;
   color: $ink;
-  background: $canvas;
+  background: transparent;
   outline: none;
-  transition: border-color $duration-fast $ease;
+  box-shadow: none;
 
   &::placeholder {
     color: $muted-soft;
   }
 
   &:focus {
-    border-color: $primary;
+    border: none;
+    box-shadow: none;
+  }
+
+  &:disabled {
+    opacity: 0.7;
   }
 }
 
+.wizard-composer .prompt-submit {
+  --prompt-submit-size: 36px;
+  border-radius: $radius-full;
+}
+
 .wizard-skip {
-  max-width: 720px;
-  margin: $spacing-sm auto 0;
+  width: 100%;
   display: flex;
   gap: $spacing-sm;
   align-items: center;
@@ -1242,7 +1344,7 @@
 @keyframes slideUpFade {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
@@ -1251,7 +1353,13 @@
 }
 
 .animate-slide-up-fade {
-  animation: slideUpFade 0.5s $ease forwards;
+  animation: vr-fade-rise $duration-reveal $ease both;
+  @include motion.reduced-motion;
+}
+
+.animate-scale-in {
+  animation: vr-scale-in $duration-slow $ease both;
+  @include motion.reduced-motion;
 }
 
 // ========================
@@ -1260,8 +1368,9 @@
 .header-brand {
   display: flex;
   align-items: center;
-  gap: $spacing-sm;
+  gap: 10px;
   min-width: 0;
+  height: 40px;
 }
 
 .mobile-sidebar-toggle,
@@ -1279,35 +1388,20 @@
 }
 
 @media (max-width: 744px) {
+  .app-header {
+    padding-left: $spacing-base;
+    padding-right: $spacing-base;
+  }
+
   .app-container {
     padding: 0 $spacing-base;
   }
 
-  .app-header {
-    height: 56px;
-    gap: $spacing-sm;
-  }
-
-  .brand-logo-img,
-  .brand-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 9px;
-  }
-
-  .brand-text {
-    font-size: 15px;
-  }
-
-  .header-actions {
-    gap: 6px;
-    flex-shrink: 0;
-  }
-
+  // Keep header height locked — only compact action labels on small screens
   .header-actions .btn-action {
     padding: 8px;
     min-width: 36px;
-    min-height: 36px;
+    height: 36px;
 
     .btn-label {
       display: none;
@@ -1343,7 +1437,8 @@
   }
 
   .prompt-input-wrapper {
-    padding: 4px 4px 4px 14px;
+    padding: 6px 6px 6px 14px;
+    min-height: 48px;
   }
 
   .prompt-textarea {
@@ -1352,8 +1447,7 @@
   }
 
   .prompt-submit {
-    width: 40px;
-    height: 40px;
+    --prompt-submit-size: 34px;
   }
 
   .prompt-bar.bottom {
@@ -1467,41 +1561,33 @@
   }
 
   .wizard-page {
-    padding: $spacing-base 0 130px;
+    padding: $spacing-base 0 0;
   }
 
   .wizard-bubble {
-    max-width: 92%;
-    min-width: min(92%, 260px);
-    font-size: 15px;
-    padding: $spacing-sm $spacing-md;
+    max-width: min(82%, 420px);
+    font-size: 14px;
+    padding: 10px 14px;
   }
 
   .wizard-input-area {
-    padding: $spacing-base $spacing-base max($spacing-base, env(safe-area-inset-bottom));
-    gap: $spacing-md;
+    padding: $spacing-sm 0 max($spacing-base, env(safe-area-inset-bottom));
   }
 
-  .wizard-chip-row {
-    flex-direction: column;
-    align-items: stretch;
+  .wizard-composer {
+    padding: $spacing-sm;
     gap: $spacing-sm;
-  }
-
-  .wizard-chips {
-    width: 100%;
+    border-radius: $radius-md;
   }
 
   .wizard-chip {
-    font-size: 13px;
+    font-size: 12px;
     padding: 6px 12px;
   }
 
   .wizard-text-row {
     gap: 8px;
-    max-width: 720px;
     width: 100%;
-    margin: 0 auto;
   }
 
   .itinerary-title {
@@ -1537,10 +1623,6 @@
   .brand-text {
     display: none;
   }
-
-  .hero-subtitle {
-    font-size: 14px;
-  }
 }
 
 @media (min-width: 745px) and (max-width: 1128px) {
@@ -1567,8 +1649,10 @@
 .app-shell-main {
   flex: 1;
   min-width: 0;
+  width: 100%;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
 }
 
 .trips-sidebar {
@@ -1616,14 +1700,22 @@
 
 .trips-sidebar-header {
   @include flex-between;
-  padding: $spacing-lg $spacing-base;
+  height: $header-height;
+  min-height: $header-height;
+  max-height: $header-height;
+  padding: 0 $spacing-base;
   border-bottom: 1px solid $hairline-soft;
-  min-height: 64px;
+  box-sizing: border-box;
+  flex-shrink: 0;
 
   h2 {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: 600;
+    font-family: $font-sans;
+    letter-spacing: 0;
     color: $ink;
+    line-height: 1;
+    margin: 0;
   }
 
   .icon-btn {
@@ -1865,8 +1957,8 @@
   .mobile-sidebar-toggle {
     display: flex;
     position: fixed;
-    top: 10px;
-    left: 10px;
+    top: 20px;
+    left: 12px;
     z-index: $z-header + 1;
     width: 40px;
     height: 40px;
@@ -1887,7 +1979,12 @@
   }
 
   .app-header {
-    padding-left: 44px;
+    padding-left: 56px;
+    padding-right: $spacing-base;
+    width: 100%;
+    height: $header-height;
+    min-height: $header-height;
+    max-height: $header-height;
   }
 
   .sidebar-backdrop {

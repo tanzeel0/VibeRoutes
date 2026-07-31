@@ -17,12 +17,13 @@ html {
 body {
   font-family: $font-sans;
   background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, var(--vr-glow), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 50% -8%, var(--vr-glow), transparent 58%),
     $canvas;
   color: $ink;
   min-height: 100vh;
-  line-height: 1.5;
+  line-height: 1.55;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {

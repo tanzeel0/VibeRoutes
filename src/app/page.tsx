@@ -265,12 +265,12 @@ export default function HomePage() {
   }, [handleNewTrip]);
 
   return (
-    <div className="app-container">
+    <div className="app-frame">
       <header className="app-header">
         <div className="header-brand">
           <BrandLogo />
         </div>
-        {isActive && (
+        {(isActive || wizardActive) && (
           <div className="header-actions">
             {status === "done" && (
               <>
@@ -292,6 +292,7 @@ export default function HomePage() {
         )}
       </header>
 
+      <div className="app-container">
       {/* ===== IDLE: Initial prompt input ===== */}
       {restored && status === "idle" && !wizardActive && (
         <main className="search-page">
@@ -460,6 +461,7 @@ export default function HomePage() {
           </div>
         </main>
       )}
+      </div>
     </div>
   );
 }
