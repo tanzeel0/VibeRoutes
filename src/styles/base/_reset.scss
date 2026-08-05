@@ -12,13 +12,12 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: $canvas;
 }
 
 body {
   font-family: $font-sans;
-  background:
-    radial-gradient(ellipse 70% 45% at 50% -8%, var(--vr-glow), transparent 58%),
-    $canvas;
+  background: $canvas;
   color: $ink;
   min-height: 100vh;
   line-height: 1.55;

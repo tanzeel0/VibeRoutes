@@ -299,7 +299,9 @@ export default function HomePage() {
           <div className="search-shell animate-slide-up-fade">
             <div className="search-hero">
               <p className="hero-kicker">Plan trips that feel like you</p>
-              <h1 className="hero-title">Vibe Routes</h1>
+              <h1 className="hero-title">
+                <BrandLogo />
+              </h1>
               <p className="hero-subtitle">
                 Tell me the city, how many days, and the vibe - get a specific
                 itinerary with real places and a live map.

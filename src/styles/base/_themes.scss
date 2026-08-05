@@ -17,7 +17,7 @@
   --vr-on-primary: #ffffff;
   --vr-sidebar: #ffffff;
   --vr-input-bg: #ffffff;
-  --vr-glow: rgba(255, 56, 92, 0.1);
+  --vr-glow: transparent;
 }
 
 [data-theme="dark"] {
@@ -36,5 +36,5 @@
   --vr-on-primary: #ffffff;
   --vr-sidebar: #0f0f10;
   --vr-input-bg: #1a1a1c;
-  --vr-glow: rgba(255, 90, 122, 0.16);
+  --vr-glow: transparent;
 }

@@ -50,12 +50,8 @@ $header-height: 80px;
   top: 0;
   flex-shrink: 0;
   overflow: hidden;
-  background: linear-gradient(
-    to bottom,
-    $canvas 55%,
-    transparent 100%
-  );
-  border-bottom: 1px solid $hairline-soft;
+  background: $canvas;
+  border-bottom: none;
   z-index: $z-header;
   box-sizing: border-box;
 }
@@ -81,7 +77,14 @@ $header-height: 80px;
   border-radius: 11px;
   flex-shrink: 0;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
+  // Kill any residual bitmap glow from the asset
+  filter: none;
+  box-shadow: none;
+}
+
+.brand--mark {
+  height: 40px;
 }
 
 .brand-icon {
@@ -92,17 +95,21 @@ $header-height: 80px;
   @include flex-center;
   color: $on-primary;
   flex-shrink: 0;
-  box-shadow: 0 6px 16px var(--vr-glow);
 }
 
 .brand-text {
   font-size: 17px;
-  font-weight: 700;
+  font-weight: 600;
   color: $ink;
   letter-spacing: -0.3px;
   font-family: $font-display;
   line-height: 1;
   white-space: nowrap;
+}
+
+.brand-ai {
+  color: $primary;
+  font-weight: 600;
 }
 
 .header-actions {
@@ -161,18 +168,6 @@ $header-height: 80px;
   justify-content: center;
   padding: $spacing-xl 0 $spacing-xxl;
   position: relative;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 8% 10% auto;
-    height: 280px;
-    background:
-      radial-gradient(ellipse at 30% 40%, var(--vr-glow), transparent 55%),
-      radial-gradient(ellipse at 70% 30%, var(--vr-glow), transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-  }
 }
 
 .search-shell {
@@ -209,6 +204,25 @@ $header-height: 80px;
   margin-bottom: 14px;
   letter-spacing: -0.03em;
   @include motion.motion-reveal($duration-reveal);
+  display: flex;
+  justify-content: center;
+
+  .brand {
+    height: auto;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .brand-logo-img {
+    width: clamp(48px, 8vw, 64px);
+    height: clamp(48px, 8vw, 64px);
+    border-radius: 14px;
+  }
+
+  .brand-text {
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 500;
+  }
 }
 
 .hero-subtitle {
@@ -1644,6 +1658,7 @@ $wizard-width: 720px;
   display: flex;
   min-height: 100vh;
   width: 100%;
+  background: $canvas;
 }
 
 .app-shell-main {
@@ -1653,6 +1668,7 @@ $wizard-width: 720px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  background: $canvas;
 }
 
 .trips-sidebar {
