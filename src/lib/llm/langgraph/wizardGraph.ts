@@ -92,11 +92,6 @@ async function nodeAnswer(state: typeof WizardState.State) {
   };
 }
 
-async function nodeExtract(state: typeof WizardState.State) {
-  const extracted = await extractSlots(state.conversation);
-  return { slots: mergeSlots(state.slots, extracted) };
-}
-
 async function nodeRouteSlots(state: typeof WizardState.State) {
   const missing = missingSlotKeys(state.slots);
   return { missing, done: false };
@@ -162,7 +157,6 @@ const wizardGraph = new StateGraph(WizardState)
   .addNode("classify", nodeClassify)
   .addNode("refuse", nodeRefuse)
   .addNode("answer", nodeAnswer)
-  .addNode("extract", nodeExtract)
   .addNode("route_slots", nodeRouteSlots)
   .addNode("ask", nodeAsk)
   .addNode("finalize", nodeFinalize)
@@ -171,12 +165,11 @@ const wizardGraph = new StateGraph(WizardState)
   .addConditionalEdges("classify", routeAfterClassify, {
     refuse: "refuse",
     answer: "answer",
-    extract: "extract",
+    extract: "route_slots",
     finalize_check: "route_slots",
   })
   .addEdge("refuse", END)
   .addEdge("answer", "route_slots")
-  .addEdge("extract", "route_slots")
   .addConditionalEdges("route_slots", routeAfterSlots, {
     ask: "ask",
     finalize: "finalize",

@@ -98,7 +98,34 @@ export function isModelNotFoundError(err: unknown): boolean {
   );
 }
 
+export function isRateLimitError(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const e = err as { status?: number; message?: string };
+  const msg = String(e.message || "");
+  return e.status === 429 || msg.includes("429") || msg.includes("Too Many Requests");
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 type ChatInput = Parameters<ChatOpenAI["invoke"]>[0];
+
+async function invokeWithRetry(
+  model: ChatOpenAI,
+  messages: ChatInput,
+  retries = 2
+) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await model.invoke(messages);
+    } catch (err) {
+      if (attempt >= retries || !isRateLimitError(err)) throw err;
+      safeErrorLog("llm-rate-limit-retry", err);
+      await sleep(500 * 2 ** attempt);
+    }
+  }
+}
 
 export async function invokeTravelModel(
   messages: ChatInput,
@@ -111,24 +138,27 @@ export async function invokeTravelModel(
   const preferred = getSelectedProvider();
 
   if (preferred === "groq") {
-    return createGroqModel(options).invoke(messages);
+    return invokeWithRetry(createGroqModel(options), messages);
   }
 
   if (process.env.NVIDIA_API_KEY || process.env.NVIDIA_NIM_API_KEY) {
     try {
-      return await createNvidiaModel({
-        ...options,
-        maxTokens: options?.maxTokens ?? 16384,
-      }).invoke(messages);
+      return await invokeWithRetry(
+        createNvidiaModel({
+          ...options,
+          maxTokens: options?.maxTokens ?? 16384,
+        }),
+        messages
+      );
     } catch (err) {
       if (!process.env.GROQ_API_KEY) throw err;
       safeErrorLog("llm-fallback", err);
-      return createGroqModel(options).invoke(messages);
+      return invokeWithRetry(createGroqModel(options), messages);
     }
   }
 
   if (process.env.GROQ_API_KEY) {
-    return createGroqModel(options).invoke(messages);
+    return invokeWithRetry(createGroqModel(options), messages);
   }
 
   throw new Error("LLM provider is not configured");
