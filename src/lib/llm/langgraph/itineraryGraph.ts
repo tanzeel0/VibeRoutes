@@ -3,11 +3,8 @@ import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import type { GenerateRequestInput } from "@/lib/validation/itinerarySchema";
 import type { ItineraryPayload } from "@/types/itinerary";
 import { SYSTEM_PROMPT, buildUserPrompt } from "../prompt";
-import { invokeTravelModel, getSelectedProvider } from "./model";
+import { invokeTravelModel } from "./model";
 import { llmItinerarySchema, type LlmItinerary } from "./schemas";
-import { nvidiaClient } from "../nvidiaClient";
-import { geminiClient } from "../geminiClient";
-import { groqClient } from "../groqClient";
 
 const ItineraryState = Annotation.Root({
   input: Annotation<GenerateRequestInput>,
@@ -47,7 +44,7 @@ async function nodeGenerate(state: typeof ItineraryState.State) {
     ],
     {
       temperature: 0.7,
-      maxTokens: 8192,
+      maxTokens: 4096,
       jsonMode: true,
     }
   );
@@ -163,40 +160,24 @@ function toPayload(
 }
 
 /**
- * LangGraph itinerary generation with validate+retry.
- * Falls back to legacy clients if the graph cannot run (e.g. gemini-only).
+ * LangGraph itinerary generation with validate+retry. Model selection and the
+ * 60s switch-over (Groq -> Gemini -> NVIDIA) live in invokeTravelModel.
  */
 export async function runItineraryGraph(
   input: GenerateRequestInput
 ): Promise<ItineraryPayload> {
-  const provider = getSelectedProvider();
+  const result = await compiledItinerary.invoke({
+    input,
+    rawText: "",
+    parsed: null,
+    error: null,
+    attempts: 0,
+  });
 
-  // Gemini stays on native client (not OpenAI-compatible)
-  if (provider === "gemini") {
-    return geminiClient.generateItinerary(input);
+  if (!result.parsed) {
+    throw new Error(
+      `Itinerary failed validation: ${result.error || "unknown error"}`
+    );
   }
-
-  try {
-    const result = await compiledItinerary.invoke({
-      input,
-      rawText: "",
-      parsed: null,
-      error: null,
-      attempts: 0,
-    });
-
-    if (result.parsed) {
-      return toPayload(result.parsed, input);
-    }
-
-    // Last-resort legacy NVIDIA/Groq parse
-    if (provider === "groq") {
-      return groqClient.generateItinerary(input);
-    }
-    return nvidiaClient.generateItinerary(input);
-  } catch (err) {
-    console.error("[itineraryGraph] falling back:", err);
-    if (provider === "groq") return groqClient.generateItinerary(input);
-    return nvidiaClient.generateItinerary(input);
-  }
+  return toPayload(result.parsed, input);
 }

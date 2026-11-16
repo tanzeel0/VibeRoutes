@@ -16,7 +16,7 @@ interface RetryConfig {
 }
 
 const DEFAULT_RETRY_CONFIG: RetryConfig = {
-  maxRetries: 3,
+  maxRetries: 1,
   baseDelay: 1000,
   maxDelay: 30000,
 };
@@ -43,14 +43,14 @@ async function generateWithGemini(
   for (let attempt = 0; attempt <= retryConfig.maxRetries; attempt++) {
     try {
       const model = genAI.getGenerativeModel({
-        model: "gemini-2.0-flash",
+        model: "gemini-3.8-flash",
         generationConfig: {
           responseMimeType: "application/json",
           temperature: 0.7,
-          maxOutputTokens: 8192,
+          maxOutputTokens: 4096,
         },
         systemInstruction: SYSTEM_PROMPT,
-      });
+      }, { timeout: 30_000 });
 
       const userPrompt = buildUserPrompt(input);
       const result = await model.generateContent(userPrompt);

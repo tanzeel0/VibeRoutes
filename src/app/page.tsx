@@ -72,7 +72,7 @@ function writeActiveTripStorage(data: {
 
 export default function HomePage() {
   const dispatch = useAppDispatch();
-  const { status, days, meta, error, activeDay, userPrompt } = useAppSelector(
+  const { status, days, meta, error, activeDay, userPrompt, modelNotice } = useAppSelector(
     (s) => s.itinerary
   );
   const { saveTrip, loadTripId, setLoadTripId, trips } = useAppShell();
@@ -369,6 +369,9 @@ export default function HomePage() {
                     <span></span>
                     <span></span>
                   </span>
+                  {modelNotice && (
+                    <span className="model-notice">{modelNotice}</span>
+                  )}
                 </div>
               </div>
             )}

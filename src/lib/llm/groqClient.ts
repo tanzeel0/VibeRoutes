@@ -3,6 +3,8 @@ import type { GenerateRequestInput } from "@/lib/validation/itinerarySchema";
 import type { ItineraryPayload } from "@/types/itinerary";
 import type { LLMProvider } from "./geminiClient";
 
+const LLM_REQUEST_TIMEOUT_MS = 30_000;
+
 async function generateWithGroq(
   input: GenerateRequestInput
 ): Promise<ItineraryPayload> {
@@ -16,15 +18,16 @@ async function generateWithGroq(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "llama-3.3-70b-versatile",
+      model: process.env.GROQ_MODEL || "openai/gpt-oss-120b",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: buildUserPrompt(input) },
       ],
       temperature: 0.7,
-      max_tokens: 8192,
+      max_tokens: 4096,
       response_format: { type: "json_object" },
     }),
+    signal: AbortSignal.timeout(LLM_REQUEST_TIMEOUT_MS),
   });
 
   if (!response.ok) {

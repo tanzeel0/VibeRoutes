@@ -16,6 +16,7 @@ export interface ChatOptions {
 
 const NVIDIA_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
 const NVIDIA_MODEL = process.env.NVIDIA_MODEL || "moonshotai/kimi-k2.6";
+const LLM_REQUEST_TIMEOUT_MS = 30_000;
 
 function getApiKey(): string {
   const key = process.env.NVIDIA_API_KEY || process.env.NVIDIA_NIM_API_KEY;
@@ -35,7 +36,7 @@ export async function nvidiaChat(
 ): Promise<string> {
   const apiKey = getApiKey();
   const temperature = options.temperature ?? 0.7;
-  const maxTokens = options.maxTokens ?? 16384;
+  const maxTokens = options.maxTokens ?? 4096;
 
   const body: Record<string, unknown> = {
     model: NVIDIA_MODEL,
@@ -54,6 +55,7 @@ export async function nvidiaChat(
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(LLM_REQUEST_TIMEOUT_MS),
   });
 
   if (!response.ok) {
@@ -97,7 +99,7 @@ export async function generateWithNvidia(
       { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: buildUserPrompt(input) },
     ],
-    { temperature: 0.7, maxTokens: 16384, json: true }
+    { temperature: 0.7, maxTokens: 4096, json: true }
   );
   return parseJsonFromLlm<ItineraryPayload>(text);
 }

@@ -1,4 +1,4 @@
-import { prisma } from "../prismaClient";
+import { prisma, withDb } from "../prismaClient";
 import type { ItineraryPayload } from "@/types/itinerary";
 
 function normalizeArray(arr: string[]): string[] {
@@ -12,6 +12,16 @@ function arraysOverlap(a: string[], b: string[]): number {
 }
 
 export async function findCachedItinerary(
+  origin: string,
+  destination: string,
+  vibePrimary: string,
+  interests: string[]
+): Promise<ItineraryPayload | null> {
+  return withDb("findCachedItinerary", () =>
+    findCachedItineraryUnsafe(origin, destination, vibePrimary, interests), null);
+}
+
+async function findCachedItineraryUnsafe(
   origin: string,
   destination: string,
   vibePrimary: string,
@@ -45,6 +55,10 @@ export async function findCachedItinerary(
 }
 
 export async function saveItinerary(payload: ItineraryPayload): Promise<void> {
+  return withDb("saveItinerary", () => saveItineraryUnsafe(payload), undefined);
+}
+
+async function saveItineraryUnsafe(payload: ItineraryPayload): Promise<void> {
   const existing = await prisma.itinerary.findUnique({
     where: { slug: payload.slug },
   });
@@ -78,6 +92,12 @@ export async function saveItinerary(payload: ItineraryPayload): Promise<void> {
 export async function getItineraryBySlug(
   slug: string
 ): Promise<ItineraryPayload | null> {
+  return withDb("getItineraryBySlug", () => getItineraryBySlugUnsafe(slug), null);
+}
+
+async function getItineraryBySlugUnsafe(
+  slug: string
+): Promise<ItineraryPayload | null> {
   const row = await prisma.itinerary.findUnique({ where: { slug } });
   if (!row) return null;
 
@@ -90,6 +110,10 @@ export async function getItineraryBySlug(
 }
 
 export async function getPopularItineraries(limit = 6) {
+  return withDb("getPopularItineraries", () => getPopularItinerariesUnsafe(limit), []);
+}
+
+async function getPopularItinerariesUnsafe(limit: number) {
   const rows = await prisma.itinerary.findMany({
     orderBy: { hitCount: "desc" },
     take: limit,

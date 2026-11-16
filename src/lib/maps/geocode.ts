@@ -52,7 +52,10 @@ export async function geocodeCity(name: string): Promise<GeoResult> {
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(name + ", India")}&limit=1`,
-      { headers: { "User-Agent": "VibeCheckRoutes/1.0" } }
+      {
+        headers: { "User-Agent": "VibeCheckRoutes/1.0" },
+        signal: AbortSignal.timeout(5_000),
+      }
     );
     if (!res.ok) return { name, lat: 28.6139, lng: 77.209 };
     const data = await res.json();

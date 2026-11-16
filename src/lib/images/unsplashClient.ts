@@ -1,4 +1,4 @@
-import { prisma } from "../db/prismaClient";
+import { prisma, withDb } from "../db/prismaClient";
 import type { DayItinerary, ImageAsset } from "@/types/itinerary";
 
 export interface UnsplashResult {
@@ -10,7 +10,11 @@ export interface UnsplashResult {
 
 async function readCache(queryKey: string): Promise<UnsplashResult | null> {
   try {
-    const cached = await prisma.imageCache.findUnique({ where: { queryKey } });
+    const cached = await withDb(
+      "imageCache.read",
+      () => prisma.imageCache.findUnique({ where: { queryKey } }),
+      null
+    );
     if (!cached) return null;
     return {
       url: cached.url,
@@ -24,16 +28,21 @@ async function readCache(queryKey: string): Promise<UnsplashResult | null> {
 
 async function writeCache(queryKey: string, result: UnsplashResult): Promise<void> {
   try {
-    await prisma.imageCache.upsert({
-      where: { queryKey },
-      update: { url: result.url, alt: result.alt, credit: result.credit },
-      create: {
-        queryKey,
-        url: result.url,
-        alt: result.alt,
-        credit: result.credit,
-      },
-    });
+    await withDb(
+      "imageCache.write",
+      () =>
+        prisma.imageCache.upsert({
+          where: { queryKey },
+          update: { url: result.url, alt: result.alt, credit: result.credit },
+          create: {
+            queryKey,
+            url: result.url,
+            alt: result.alt,
+            credit: result.credit,
+          },
+        }),
+      null
+    );
   } catch {
     /* cache is best-effort */
   }
@@ -60,7 +69,8 @@ function buildQueries(seed: string, destination: string): string[] {
 async function searchUnsplash(
   query: string,
   page = 1,
-  perPage = 8
+  perPage = 8,
+  signal?: AbortSignal
 ): Promise<UnsplashResult[]> {
   const apiKey = process.env.UNSPLASH_ACCESS_KEY;
   if (!apiKey) return [];
@@ -73,6 +83,7 @@ async function searchUnsplash(
 
     const res = await fetch(url, {
       headers: { Authorization: `Client-ID ${apiKey}` },
+      signal,
     });
     if (!res.ok) return [];
 
@@ -112,9 +123,11 @@ export async function fetchImage(
 ): Promise<UnsplashResult | null> {
   const destination = options?.destination || "";
   const excludeIds = options?.excludeIds || new Set<string>();
-  const queries = buildQueries(query, destination || query);
+  const queries = buildQueries(query, destination || query).slice(0, 3);
+  const signal = AbortSignal.timeout(8_000);
 
   for (const q of queries) {
+    if (signal.aborted) break;
     const cacheKey = q;
     const cached = await readCache(cacheKey);
     if (cached) {
@@ -125,7 +138,7 @@ export async function fetchImage(
       }
     }
 
-    const photos = await searchUnsplash(q, 1, 10);
+    const photos = await searchUnsplash(q, 1, 10, signal);
     for (const photo of photos) {
       if (photo.photoId && excludeIds.has(photo.photoId)) continue;
       if ([...excludeIds].some((id) => photo.url.includes(id))) continue;
@@ -135,11 +148,14 @@ export async function fetchImage(
   }
 
   // Last resort: destination-only / india travel without exclude filter
-  const fallbacks = await searchUnsplash(
-    destination ? `${destination} india` : "india travel",
-    1,
-    12
-  );
+  const fallbacks = signal.aborted
+    ? []
+    : await searchUnsplash(
+        destination ? `${destination} india` : "india travel",
+        1,
+        12,
+        signal
+      );
   return fallbacks[0] || null;
 }
 
@@ -175,7 +191,7 @@ export async function ensureDayImages(
     ].filter(Boolean) as string[];
 
     let image: ImageAsset | undefined;
-    for (const seed of seeds) {
+    for (const seed of seeds.slice(0, 1)) {
       const photo = await fetchImage(seed, { destination, excludeIds: used });
       if (photo) {
         if (photo.photoId) used.add(photo.photoId);

@@ -1,6 +1,7 @@
 "use client";
 
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { readEventStream } from "@/lib/readEventStream";
 import type { DayItinerary, ItineraryPayload, GenerateRequest, Interest, PurposeTag, VibeTag } from "@/types/itinerary";
 
 interface ItineraryState {
@@ -8,6 +9,8 @@ interface ItineraryState {
   days: DayItinerary[];
   meta: ItineraryPayload | null;
   error: string | null;
+  /** "Model X didn't respond — switching to Y" while generating */
+  modelNotice: string | null;
   activeDay: number | null;
   input: GenerateRequest;
   userPrompt: string;
@@ -18,6 +21,7 @@ const initialState: ItineraryState = {
   days: [],
   meta: null,
   error: null,
+  modelNotice: null,
   activeDay: null,
   userPrompt: "",
   input: {
@@ -100,62 +104,21 @@ async function streamGenerate(
     throw new Error("Failed to start generation");
   }
 
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() || "";
-
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed || !trimmed.startsWith("data: ")) continue;
-
-      try {
-        const data = JSON.parse(trimmed.slice(6));
-
-        if (data.type === "day") {
-          dispatch(itinerarySlice.actions.addDay(data.data as DayItinerary));
-        } else if (data.type === "meta") {
-          dispatch(itinerarySlice.actions.setMeta(data.data as ItineraryPayload));
-        } else if (data.type === "error") {
-          dispatch(
-            itinerarySlice.actions.setError(
-              "Could not build your itinerary right now. Please try again."
-            )
-          );
-          return;
-        }
-      } catch {
-        // skip malformed lines
-      }
-    }
-  }
-
-  // Flush any trailing SSE payload that lacked a final newline
-  const trailing = buffer.trim();
-  if (trailing.startsWith("data: ")) {
-    try {
-      const data = JSON.parse(trailing.slice(6));
-      if (data.type === "day") {
-        dispatch(itinerarySlice.actions.addDay(data.data as DayItinerary));
-      } else if (data.type === "meta") {
-        dispatch(itinerarySlice.actions.setMeta(data.data as ItineraryPayload));
-      } else if (data.type === "error") {
-        dispatch(
-          itinerarySlice.actions.setError(
-            "Could not build your itinerary right now. Please try again."
-          )
-        );
-        return;
-      }
-    } catch {
-      // skip malformed trailing chunk
+  for await (const event of readEventStream(res.body)) {
+    if (event.type === "day") {
+      dispatch(itinerarySlice.actions.addDay(event.data as DayItinerary));
+    } else if (event.type === "meta") {
+      dispatch(itinerarySlice.actions.setMeta(event.data as ItineraryPayload));
+    } else if (event.type === "notice") {
+      const message = (event.data as { message?: string })?.message;
+      if (message) dispatch(itinerarySlice.actions.setModelNotice(message));
+    } else if (event.type === "error") {
+      dispatch(
+        itinerarySlice.actions.setError(
+          "Could not build your itinerary right now. Please try again."
+        )
+      );
+      return;
     }
   }
 
@@ -175,12 +138,14 @@ const itinerarySlice = createSlice({
       state.userPrompt = "";
     },
     clearForNew(state) {
+      state.modelNotice = null;
       state.days = [];
       state.meta = null;
       state.error = null;
       state.activeDay = null;
     },
     beginModify(state) {
+      state.modelNotice = null;
       // Keep meta visible while regenerating; clear days for the stream
       state.days = [];
       state.error = null;
@@ -188,6 +153,10 @@ const itinerarySlice = createSlice({
     },
     setStatus(state, action: PayloadAction<ItineraryState["status"]>) {
       state.status = action.payload;
+      if (action.payload !== "streaming") state.modelNotice = null;
+    },
+    setModelNotice(state, action: PayloadAction<string | null>) {
+      state.modelNotice = action.payload;
     },
     addDay(state, action: PayloadAction<DayItinerary>) {
       state.days.push(action.payload);
@@ -197,6 +166,7 @@ const itinerarySlice = createSlice({
     },
     setError(state, action: PayloadAction<string>) {
       state.status = "error";
+      state.modelNotice = null;
       state.error = action.payload;
     },
     setActiveDay(state, action: PayloadAction<number | null>) {

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { GenerateRequest, VibeTag, Interest, PurposeTag } from "@/types/itinerary";
 import { Sparkles, Send } from "lucide-react";
+import { readEventStream } from "@/lib/readEventStream";
 
 interface Message {
   id: number;
@@ -62,6 +63,8 @@ export default function ChatWizard({ initialPrompt, onComplete }: ChatWizardProp
   const [isThinking, setIsThinking] = useState(true);
   const [isComplete, setIsComplete] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // "Model X didn't respond — switching to Y" while a reply is pending
+  const [modelNotice, setModelNotice] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textInputRef = useRef<HTMLInputElement>(null);
@@ -81,6 +84,7 @@ export default function ChatWizard({ initialPrompt, onComplete }: ChatWizardProp
       setIsThinking(true);
       setError(null);
       setSuggestions(null);
+      setModelNotice(null);
 
       try {
         const res = await fetch("/api/wizard", {
@@ -88,8 +92,22 @@ export default function ChatWizard({ initialPrompt, onComplete }: ChatWizardProp
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ messages: history }),
         });
-        const data = (await res.json()) as WizardApiResponse;
-        if (!res.ok) {
+        if (!res.ok || !res.body) {
+          throw new Error("wizard_unavailable");
+        }
+
+        let data: WizardApiResponse | null = null;
+        for await (const event of readEventStream(res.body)) {
+          if (event.type === "notice") {
+            const message = (event.data as { message?: string })?.message;
+            if (message) setModelNotice(message);
+          } else if (event.type === "result") {
+            data = event.data as WizardApiResponse;
+          } else if (event.type === "error") {
+            throw new Error("wizard_unavailable");
+          }
+        }
+        if (!data) {
           throw new Error("wizard_unavailable");
         }
 
@@ -121,6 +139,7 @@ export default function ChatWizard({ initialPrompt, onComplete }: ChatWizardProp
         );
       } finally {
         setIsThinking(false);
+        setModelNotice(null);
         setTimeout(() => textInputRef.current?.focus(), 120);
       }
     },
@@ -204,6 +223,9 @@ export default function ChatWizard({ initialPrompt, onComplete }: ChatWizardProp
                   <span></span>
                   <span></span>
                 </span>
+                {modelNotice && (
+                  <span className="model-notice">{modelNotice}</span>
+                )}
               </div>
             </div>
           )}

@@ -3,7 +3,10 @@ import { generateRequestSchema } from "@/lib/validation/itinerarySchema";
 import { findCachedItinerary, saveItinerary } from "@/lib/db/queries/itinerary";
 import { geocodeCity } from "@/lib/maps/geocode";
 import { ensureDayImages, ensureHeroImage } from "@/lib/images/unsplashClient";
-import llmClient, { getLlmModelLabel } from "@/lib/llm";
+import llmClient, {
+  getLlmModelLabel,
+  runWithModelSwitchNotices,
+} from "@/lib/llm";
 import type { ItineraryPayload, DayItinerary, VibeTag, PurposeTag } from "@/types/itinerary";
 import slugify from "slugify";
 import {
@@ -29,6 +32,10 @@ function serializeDay(day: DayItinerary): string {
 
 function serializeMeta(payload: ItineraryPayload): string {
   return JSON.stringify({ type: "meta", data: payload });
+}
+
+function serializeNotice(message: string): string {
+  return JSON.stringify({ type: "notice", data: { message } });
 }
 
 function serializeError(message: string): string {
@@ -251,7 +258,11 @@ export async function POST(req: NextRequest) {
         }
 
         // Generate / modify from LLM
-        const rawItinerary = await llmClient.generateItinerary(input);
+        // Tell the client whenever a slow/failed model is swapped for the next one
+        const rawItinerary = await runWithModelSwitchNotices(
+          (notice) => send(serializeNotice(notice.message)),
+          () => llmClient.generateItinerary(input)
+        );
 
         const itinerary = await enrichItinerary(rawItinerary, input);
 

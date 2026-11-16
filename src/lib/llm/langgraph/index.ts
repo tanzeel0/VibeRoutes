@@ -6,4 +6,8 @@ export {
   getModelLabel,
   getSelectedProvider,
   invokeTravelModel,
+  runWithModelSwitchNotices,
+  describeProvider,
+  getModelSwitchTimeoutMs,
 } from "./model";
+export type { ModelSwitchNotice } from "./model";
